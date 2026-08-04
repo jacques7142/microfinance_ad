@@ -19,7 +19,7 @@
               @endif
             </td>
             <td>
-              <button class="btn btn-navy btn-sm" onclick="preremplir({{ $compte->id }}, '{{ $compte->societaire->nomComplet() }}', {{ $compte->mise_habituelle ?? 0 }})">Collecter</button>
+              <button class="btn btn-navy btn-sm" onclick="preremplir({{ $compte->id }}, '{{ $compte->societaire->nomComplet() }}', {{ $compte->mise_habituelle ?? 0 }})"><x-icon name="wallet" size="14"/> Collecter</button>
             </td>
           </tr>
         @empty

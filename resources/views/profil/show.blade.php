@@ -147,12 +147,12 @@
         @if($authType === 'user')
             <span class="role">{{ ucfirst(str_replace('_', ' ', $user->role)) }}</span>
             @if($user->agence)
-                <div class="meta" style="margin-top: 8px;">📍 {{ $user->agence->nom }}</div>
+                <div class="meta" style="margin-top: 8px;"><x-icon name="map-pin" size="14" style="vertical-align: middle;"/> {{ $user->agence->nom }}</div>
             @endif
         @else
             <span class="role">Sociétaire</span>
             @if($user->agence)
-                <div class="meta" style="margin-top: 8px;">📍 {{ $user->agence->nom }}</div>
+                <div class="meta" style="margin-top: 8px;"><x-icon name="map-pin" size="14" style="vertical-align: middle;"/> {{ $user->agence->nom }}</div>
             @endif
         @endif
         
@@ -161,13 +161,13 @@
         @endif
         
         <div class="profile-actions">
-            <a href="{{ route('profil.edit') }}" class="btn btn-navy btn-sm">✏️ Modifier le profil</a>
+            <a href="{{ route('profil.edit') }}" class="btn btn-navy btn-sm"><x-icon name="edit" size="14"/> Modifier le profil</a>
         </div>
     </div>
 </div>
 
 <div class="card-section">
-    <div class="section-title">📋 Informations détaillées</div>
+    <div class="section-title"><x-icon name="list" size="18"/> Informations détaillées</div>
     <div class="info-grid">
         <div class="info-item">
             <div class="info-label">Prénom</div>
@@ -195,7 +195,7 @@
                 <div class="info-label">Statut</div>
                 <div class="info-value">
                     <span class="badge {{ $user->actif ? 'b-green' : 'b-red' }}">
-                        {{ $user->actif ? '✓ Actif' : '✕ Inactif' }}
+                        {!! $user->actif ? '<x-icon name="check" size="12"/> Actif' : '<x-icon name="x" size="12"/> Inactif' !!}
                     </span>
                 </div>
             </div>

@@ -32,7 +32,7 @@ class User extends Authenticatable
 
     protected $fillable = [
         'agence_id', 'nom', 'prenom', 'email', 'password', 'telephone',
-        'role', 'seuil_validation', 'zone_tournee', 'actif', 'photo_profil', 'bio', 'derniere_modification_profil',
+        'role', 'seuil_validation', 'zone_tournee', 'actif', 'couleur', 'photo_profil', 'bio', 'derniere_modification_profil',
     ];
 
     protected $hidden = ['password', 'remember_token'];

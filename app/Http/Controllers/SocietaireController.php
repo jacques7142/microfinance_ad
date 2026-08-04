@@ -15,7 +15,7 @@ class SocietaireController extends Controller
         $user = $request->user();
 
         $societaires = Societaire::with('agence')
-            ->when($user->role !== 'administrateur' && $user->role !== 'comptable', fn ($q) => $q->where('agence_id', $user->agence_id))
+            ->when($user->role !== 'administrateur', fn ($q) => $q->where('agence_id', $user->agence_id))
             ->when($request->filled('q'), function ($q) use ($request) {
                 $term = $request->string('q');
                 $q->where(fn ($sub) => $sub->where('nom', 'like', "%$term%")
@@ -57,8 +57,13 @@ class SocietaireController extends Controller
         return redirect()->route('societaires.show', $societaire)->with('success', 'Sociétaire enregistré.');
     }
 
-    public function show(Societaire $societaire): View
+    public function show(Request $request, Societaire $societaire): View
     {
+        $user = $request->user();
+        if ($user->role !== 'administrateur' && $societaire->agence_id !== $user->agence_id) {
+            abort(403);
+        }
+
         $societaire->load(['comptesEpargne', 'compteTontine.collectes', 'credits.echeances', 'documents']);
 
         return view('societaires.show', ['societaire' => $societaire]);

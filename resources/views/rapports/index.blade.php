@@ -25,13 +25,13 @@
           </select>
         </div>
       @endif
-      <button class="btn btn-navy" type="submit">Générer</button>
+      <button class="btn btn-navy" type="submit"><x-icon name="download" size="16"/> Générer</button>
     </form>
   </div>
 
   <div class="card">
     <table>
-      <tr><th>Type</th><th>Période</th><th>Format</th><th>Portée</th><th>Date</th></tr>
+      <tr><th>Type</th><th>Période</th><th>Format</th><th>Portée</th><th>Date</th><th></th></tr>
       @forelse($rapports as $r)
         <tr>
           <td>{{ $r->type_rapport }}</td>
@@ -39,9 +39,17 @@
           <td><span class="badge b-navy">{{ strtoupper($r->format_export) }}</span></td>
           <td>{{ $r->estMultiAgences() ? 'Consolidé' : $r->agence->nom }}</td>
           <td>{{ $r->date_generation->format('d/m/Y H:i') }}</td>
+          <td style="white-space:nowrap;">
+            <a href="{{ route('rapports.show', $r) }}" class="btn btn-sm btn-ghost" style="padding:4px 9px;"><x-icon name="eye" size="13"/></a>
+            <a href="{{ route('rapports.edit', $r) }}" class="btn btn-sm btn-ghost" style="padding:4px 9px;"><x-icon name="edit" size="13"/></a>
+            <form method="POST" action="{{ route('rapports.destroy', $r) }}" style="display:inline;" onsubmit="return confirm('Supprimer ce rapport ?');">
+              @csrf @method('DELETE')
+              <button class="btn btn-sm btn-danger" style="padding:4px 9px;" type="submit"><x-icon name="x" size="13"/></button>
+            </form>
+          </td>
         </tr>
       @empty
-        <tr><td colspan="5" style="color:#5c6479;">Aucun rapport généré.</td></tr>
+        <tr><td colspan="6" style="color:#5c6479;">Aucun rapport généré.</td></tr>
       @endforelse
     </table>
   </div>

@@ -20,18 +20,20 @@ class CreditController extends Controller
         $user = $request->user();
 
         $credits = Credit::with(['societaire', 'agentCredit', 'gerant'])
-            ->when($user->role === User::ROLE_AGENT_CREDIT, fn ($q) => $q->whereHas('societaire', fn ($sq) => $sq->where('agence_id', $user->agence_id)))
-            ->when($user->role === User::ROLE_GERANT, fn ($q) => $q->whereHas('societaire', fn ($sq) => $sq->where('agence_id', $user->agence_id)))
+            ->when($user->role !== User::ROLE_ADMIN, fn ($q) => $q->whereHas('societaire', fn ($sq) => $sq->where('agence_id', $user->agence_id)))
             ->orderByDesc('date_demande')
             ->paginate(20);
 
         return view('credits.index', ['credits' => $credits]);
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
+        $user = $request->user();
+
         return view('credits.create', [
-            'societaires' => Societaire::orderBy('nom')->get(['id', 'nom', 'prenom', 'numero_societaire']),
+            'societaires' => Societaire::when($user->role !== User::ROLE_ADMIN, fn ($q) => $q->where('agence_id', $user->agence_id))
+                ->orderBy('nom')->get(['id', 'nom', 'prenom', 'numero_societaire']),
             'sousTypesOrdinaire' => Credit::SOUS_TYPES_ORDINAIRE,
         ]);
     }
@@ -49,9 +51,14 @@ class CreditController extends Controller
             'taux_interet' => ['required', 'numeric', 'min:0', 'max:100'],
         ]);
 
+        $user = $request->user();
+        $societaire = Societaire::with('compteTontine')->findOrFail($data['societaire_id']);
+        if ($user->role !== User::ROLE_ADMIN && $societaire->agence_id !== $user->agence_id) {
+            abort(403);
+        }
+
         // Crédit tontine : vérifie l'adossement et le plafond de garantie avant tout enregistrement.
         if ($data['type'] === Credit::TYPE_TONTINE) {
-            $societaire = Societaire::with('compteTontine')->findOrFail($data['societaire_id']);
             $compteTontine = $societaire->compteTontine;
 
             if (! $compteTontine) {
@@ -78,8 +85,13 @@ class CreditController extends Controller
         return redirect()->route('credits.show', $credit)->with('success', 'Demande de crédit enregistrée.');
     }
 
-    public function show(Credit $credit): View
+    public function show(Request $request, Credit $credit): View
     {
+        $user = $request->user();
+        if ($user->role !== User::ROLE_ADMIN && $credit->societaire->agence_id !== $user->agence_id) {
+            abort(403);
+        }
+
         $credit->load(['societaire', 'agentCredit', 'gerant', 'echeances', 'frais']);
 
         return view('credits.show', ['credit' => $credit]);

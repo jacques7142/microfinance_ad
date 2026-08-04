@@ -10,6 +10,9 @@ class Message extends Model
 {
     use HasFactory;
 
+    public const EXPEDITEUR_SOCIETAIRE = 'societaire';
+    public const EXPEDITEUR_AGENCE = 'agence';
+
     protected $fillable = ['societaire_id', 'utilisateur_id', 'expediteur', 'contenu', 'date_envoi', 'lu'];
 
     protected function casts(): array

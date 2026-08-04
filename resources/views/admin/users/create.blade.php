@@ -35,7 +35,7 @@
     </div>
     <div class="field" id="seuilBlock" style="display:none;"><label>Seuil de validation crédit (F CFA)</label><input type="number" step="0.01" name="seuil_validation"></div>
     <div class="field" id="zoneBlock" style="display:none;"><label>Zone de tournée</label><input name="zone_tournee"></div>
-    <button class="btn btn-navy" type="submit">Créer le compte</button>
+    <button class="btn btn-navy" type="submit"><x-icon name="plus" size="16"/> Créer le compte</button>
   </form>
 </div>
 @endsection

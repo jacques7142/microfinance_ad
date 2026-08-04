@@ -37,7 +37,7 @@
       <div class="field"><label>Durée (mois)</label><input type="number" name="duree_mois" value="12" required></div>
     </div>
     <div class="field"><label>Taux d'intérêt annuel (%)</label><input type="number" step="0.01" name="taux_interet" value="12" required></div>
-    <button class="btn btn-navy" type="submit">Enregistrer la demande</button>
+    <button class="btn btn-navy" type="submit"><x-icon name="save" size="16"/> Enregistrer la demande</button>
   </form>
 </div>
 @endsection

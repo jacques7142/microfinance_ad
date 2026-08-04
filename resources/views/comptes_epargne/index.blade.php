@@ -34,7 +34,7 @@
         </select>
       </div>
       <div class="field"><label>Montant (F CFA)</label><input type="number" step="0.01" name="montant" required></div>
-      <button class="btn btn-navy" type="submit">Valider l'opération</button>
+      <button class="btn btn-navy" type="submit"><x-icon name="save" size="16"/> Valider l'opération</button>
     </form>
   </div>
 </div>

@@ -14,7 +14,7 @@ return new class extends Migration
 
             $table->enum('type_piece', [
                 'cni', 'passeport', 'justificatif_domicile', 'photo_identite',
-                'bulletin_salaire', 'registre_commerce', 'autre',
+                'bulletin_salaire', 'registre_commerce', 'signature', 'autre',
             ]);
             $table->string('chemin_fichier'); // stockage local ou cloud (S3, etc.)
             $table->string('nom_original')->nullable();

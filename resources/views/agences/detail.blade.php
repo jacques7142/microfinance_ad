@@ -232,19 +232,19 @@
 <div class="agence-header">
     <div class="agence-header-info">
         <h1>{{ $agence->nom }}</h1>
-        <p>📍 {{ $agence->ville }}, {{ $agence->secteur ?? 'Togo' }}</p>
-        <p>📅 Ouverture: {{ $agence->date_ouverture->format('d M Y') }}</p>
+        <p><x-icon name="map-pin" size="16"/> {{ $agence->ville }}, {{ $agence->secteur ?? 'Togo' }}</p>
+        <p><x-icon name="calendar" size="16"/> Ouverture: {{ $agence->date_ouverture->format('d M Y') }}</p>
         <div style="margin-top: 12px;">
             @if($agence->est_siege)
-                <span class="badge b-navy">🏛️ Direction Générale</span>
+                <span class="badge b-navy"><x-icon name="building" size="14"/> Direction Générale</span>
             @endif
             <span class="agence-status {{ $agence->actif ? 'actif' : '' }}">
-                {{ $agence->actif ? '✓ Actif' : '✕ Inactif' }}
+                {!! $agence->actif ? '<x-icon name="check" size="14"/> Actif' : '<x-icon name="x" size="14"/> Inactif' !!}
             </span>
         </div>
     </div>
     <div style="text-align: right;">
-        <div style="font-size: 32px; margin-bottom: 8px;">🏢</div>
+        <div style="margin-bottom: 8px;"><x-icon name="building" size="40"/></div>
     </div>
 </div>
 
@@ -254,7 +254,7 @@
     <div>
         <!-- Carte -->
         <div class="card-section">
-            <div class="info-title">📍 Localisation</div>
+            <div class="info-title"><x-icon name="map-pin" size="14"/> Localisation</div>
             <div id="map"></div>
             <div class="map-info">
                 Latitude: {{ $agence->latitude ?? 'Non définie' }} | 
@@ -264,14 +264,14 @@
         
         <!-- Description et Horaires -->
         <div class="card-section" style="margin-top: 24px;">
-            <div class="info-title">📋 À Propos</div>
+            <div class="info-title"><x-icon name="list" size="14"/> À Propos</div>
             <div class="info-content">
                 {{ $agence->description ?? 'Aucune description disponible.' }}
             </div>
             
             @if($agence->horaires_fonctionnement)
                 <div style="margin-top: 20px;">
-                    <div class="info-title">🕐 Horaires de Fonctionnement</div>
+                    <div class="info-title"><x-icon name="tontine" size="14"/> Horaires de Fonctionnement</div>
                     <ul class="horaires-list">
                         @foreach($agence->horaires_fonctionnement as $jour => $horaires)
                             <li>
@@ -289,7 +289,7 @@
     <div>
         <!-- Chef d'Agence -->
         <div class="card-section">
-            <div class="info-title">👨‍💼 Chef d'Agence</div>
+            <div class="info-title"><x-icon name="briefcase" size="14"/> Chef d'Agence</div>
             
             @if($gerant)
                 <div class="gerant-card">
@@ -304,17 +304,17 @@
                     </div>
                     
                     <div class="info-block">
-                        <div class="info-title" style="margin-bottom: 6px;">📧 Email</div>
+<div class="info-title" style="margin-bottom: 6px;"><x-icon name="email" size="14"/> Email</div>
                         <a href="mailto:{{ $gerant->email }}" class="contact-button" style="width: 100%; text-align: center;">
-                            📧 {{ $gerant->email }}
+                            <x-icon name="email" size="14"/> {{ $gerant->email }}
                         </a>
                     </div>
-                    
+
                     @if($gerant->telephone)
                         <div class="info-block">
-                            <div class="info-title" style="margin-bottom: 6px;">📱 Téléphone</div>
+                            <div class="info-title" style="margin-bottom: 6px;"><x-icon name="phone" size="14"/> Téléphone</div>
                             <a href="tel:{{ $gerant->telephone }}" class="contact-button" style="width: 100%; text-align: center;">
-                                📱 {{ $gerant->telephone }}
+                                <x-icon name="phone" size="14"/> {{ $gerant->telephone }}
                             </a>
                         </div>
                     @endif
@@ -328,7 +328,7 @@
         
         <!-- Informations Agence -->
         <div class="card-section" style="margin-top: 24px;">
-            <div class="info-title">📊 Statistiques</div>
+            <div class="info-title"><x-icon name="chart" size="14"/> Statistiques</div>
             <div class="stats-mini">
                 <div class="stat-mini">
                     <div class="label">Sociétaires</div>
@@ -343,23 +343,23 @@
         
         <!-- Contact Agence -->
         <div class="card-section" style="margin-top: 24px;">
-            <div class="info-title">📞 Contacter l'Agence</div>
-            
+<div class="info-title"><x-icon name="phone" size="14"/> Contacter l'Agence</div>
+
             @if($agence->telephone_agence)
                 <a href="tel:{{ $agence->telephone_agence }}" class="contact-button" style="width: 100%; text-align: center; margin-bottom: 10px;">
-                    📱 {{ $agence->telephone_agence }}
+                    <x-icon name="phone" size="14"/> {{ $agence->telephone_agence }}
                 </a>
             @endif
-            
-            <a href="https://www.google.com/maps/search/{{ urlencode($agence->nom . ' ' . $agence->ville) }}" 
+
+            <a href="https://www.google.com/maps/search/{{ urlencode($agence->nom . ' ' . $agence->ville) }}"
                target="_blank" class="contact-button" style="width: 100%; text-align: center;">
-                🗺️ Google Maps
+                <x-icon name="map-pin" size="14"/> Google Maps
             </a>
         </div>
         
         <!-- Adresse -->
         <div class="card-section" style="margin-top: 24px;">
-            <div class="info-title">📍 Adresse</div>
+            <div class="info-title"><x-icon name="map-pin" size="14"/> Adresse</div>
             <div class="info-content">
                 {{ $agence->adresse }}
             </div>
@@ -372,7 +372,7 @@
 
 <!-- Bouton Retour -->
 <div style="margin-top: 28px;">
-    <a href="{{ route('dashboard') }}" class="btn btn-ghost">← Retour au tableau de bord</a>
+    <a href="{{ route('dashboard') }}" class="btn btn-ghost"><x-icon name="arrow-right" size="14" style="transform: rotate(180deg);"/> Retour au tableau de bord</a>
 </div>
 
 @push('scripts')
@@ -396,7 +396,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Ajouter un marqueur
     const marker = L.marker([lat, lng]).addTo(map);
-    marker.bindPopup(`<strong>${agenceName}</strong><br>📍 ${lat.toFixed(4)}, ${lng.toFixed(4)}`).openPopup();
+    marker.bindPopup(`<strong>${agenceName}</strong><br>${lat.toFixed(4)}, ${lng.toFixed(4)}`).openPopup();
     
     // Ajouter un cercle de rayon
     L.circle([lat, lng], {

@@ -11,7 +11,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class LoginController extends Controller
@@ -29,55 +28,65 @@ class LoginController extends Controller
     public function login(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'account_type' => ['required', Rule::in(['interne', 'societaire'])],
             'identifier' => ['required', 'string'],
             'password' => ['required'],
         ]);
 
-        if ($data['account_type'] === 'societaire') {
-            $identifier = trim($data['identifier']);
-            $normalizedPhone = preg_replace('/\D+/', '', $identifier);
-            $normalizedNumero = strtoupper(str_replace(' ', '', $identifier));
+        $identifier = trim($data['identifier']);
 
-            $societaire = Societaire::where(function ($query) use ($identifier, $normalizedPhone, $normalizedNumero) {
-                $query->where('telephone', $normalizedPhone)
-                      ->orWhere('numero_societaire', $identifier)
-                      ->orWhere('numero_societaire', $normalizedNumero);
-            })->first();
+        // 1. Tentative connexion interne (User) par email
+        $credentials = ['email' => $identifier, 'password' => $data['password']];
 
-            if (! $societaire || ! Hash::check($data['password'], $societaire->password)) {
-                JournalActivite::enregistrer(
-                    'connexion',
-                    "Échec de connexion sociétaire pour {$data['identifier']}",
-                    statut: 'echec'
-                );
+        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+            $request->session()->regenerate();
+            JournalActivite::enregistrer('connexion', 'Connexion réussie');
 
-                return back()->withErrors(['identifier' => 'Identifiants incorrects.'])->withInput();
-            }
+            $user = Auth::user();
 
+            $route = match ($user->role) {
+                User::ROLE_ADMIN => 'dashboard',
+                User::ROLE_GERANT => 'dashboard',
+                User::ROLE_AGENT_CREDIT => 'dashboard',
+                User::ROLE_AGENT_PROMOTION => 'dashboard',
+                User::ROLE_CAISSIER => 'dashboard',
+                User::ROLE_COMPTABLE => 'dashboard',
+                default => 'dashboard',
+            };
+
+            return redirect()->intended(route($route));
+        }
+
+        // 2. Tentative connexion sociétaire par téléphone ou numéro sociétaire
+        $normalizedPhone = preg_replace('/\D+/', '', $identifier);
+        $normalizedNumero = strtoupper(str_replace(' ', '', $identifier));
+
+        $societaire = Societaire::where(function ($query) use ($identifier, $normalizedPhone, $normalizedNumero) {
+            $query->where('telephone', $normalizedPhone)
+                  ->orWhere('numero_societaire', $identifier)
+                  ->orWhere('numero_societaire', $normalizedNumero);
+        })->first();
+
+        if ($societaire && Hash::check($data['password'], $societaire->password)) {
             Auth::guard('societaire')->login($societaire);
             $request->session()->regenerate();
             JournalActivite::enregistrer('connexion', 'Connexion sociétaire réussie');
 
-            return redirect()->intended(route('societaire.dashboard'));
+            // On force la redirection vers l'espace sociétaire : l'URL "intended"
+            // peut pointer vers une page interne (web guard) inaccessible au
+            // sociétaire, ce qui provoquerait une boucle de redirection.
+            $request->session()->forget('url.intended');
+
+            return redirect()->route('societaire.dashboard');
         }
 
-        $credentials = ['email' => $data['identifier'], 'password' => $data['password']];
+        // 3. Échec
+        JournalActivite::enregistrer(
+            'connexion',
+            "Échec de connexion pour {$identifier}",
+            statut: 'echec'
+        );
 
-        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
-            JournalActivite::enregistrer(
-                'connexion',
-                "Échec de connexion pour {$data['identifier']}",
-                statut: 'echec'
-            );
-
-            return back()->withErrors(['identifier' => 'Identifiants incorrects.'])->withInput();
-        }
-
-        $request->session()->regenerate();
-        JournalActivite::enregistrer('connexion', 'Connexion réussie');
-
-        return redirect()->intended(route('dashboard'));
+        return back()->withErrors(['identifier' => 'Identifiants incorrects.'])->withInput();
     }
 
     public function logout(Request $request): RedirectResponse

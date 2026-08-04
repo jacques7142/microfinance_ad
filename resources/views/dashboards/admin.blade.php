@@ -202,15 +202,15 @@
 
 <div class="header-admin">
     <div class="header-left">
-        <h1>Administration système</h1>
-        <p>Vue globale — {{ $nbAgences }} agences</p>
+        <h1><x-icon name="dashboard" size="24"/> Administration système</h1>
+        <p><x-icon name="building" size="14"/> {{ $nbAgences }} agences</p>
     </div>
     <div class="header-right">
         <div class="status-badge">
             <div class="status-dot"></div>
-            Système opérationnel
+            <x-icon name="check" size="14"/> Système opérationnel
         </div>
-        <div class="notification-icon">🔔</div>
+        <div class="notification-icon"><x-icon name="bell" size="20"/></div>
     </div>
 </div>
 
@@ -243,16 +243,16 @@
 <div class="agencies-grid">
     @foreach($agences->take(6) as $agence)
         <div class="agency-card" onclick="openAgenceModal({{ $agence->id }})" style="cursor: pointer;">
-            <div class="agency-icon">🏢</div>
+            <div class="agency-icon"><x-icon name="building" size="28"/></div>
             <div class="agency-name">{{ substr($agence->nom, 0, 20) }}</div>
             <div class="agency-stats">
                 {{ $agence->societaires_count }} sociétaires · PAM {{ rand(1, 5) }}%
             </div>
             <div class="agency-status status-normal">
                 @if(rand(0, 1))
-                    ✓ Fonctionnement normal
+                    <x-icon name="check" size="12"/> Fonctionnement normal
                 @else
-                    ⚠ Incident signalé
+                    <x-icon name="alert" size="12"/> Incident signalé
                 @endif
             </div>
         </div>
@@ -341,9 +341,9 @@
                             <td style="font-size: 12px;">{{ $entree->description ?? $entree->action }}</td>
                             <td>
                                 @if($entree->statut === 'succes')
-                                    <span class="action-badge action-authorized">✓ Autorisée</span>
+                                    <span class="action-badge action-authorized"><x-icon name="check" size="12"/> Autorisée</span>
                                 @else
-                                    <span class="action-badge action-blocked">✕ Bloquée</span>
+                                    <span class="action-badge action-blocked"><x-icon name="x" size="12"/> Bloquée</span>
                                 @endif
                             </td>
                         </tr>

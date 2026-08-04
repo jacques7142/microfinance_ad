@@ -9,7 +9,7 @@
     <div class="field"><label>Adresse</label><input name="adresse"></div>
     <div class="field"><label>Date d'ouverture</label><input type="date" name="date_ouverture"></div>
     <div class="field"><label><input type="checkbox" name="est_siege" value="1" style="width:auto;"> Cette agence est le siège (Direction Générale)</label></div>
-    <button class="btn btn-navy" type="submit">Créer l'agence</button>
+    <button class="btn btn-navy" type="submit"><x-icon name="plus" size="16"/> Créer l'agence</button>
   </form>
 </div>
 @endsection

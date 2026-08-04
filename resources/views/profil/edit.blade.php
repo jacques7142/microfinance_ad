@@ -167,7 +167,7 @@
                 
                 <div class="photo-controls">
                     <p style="font-size: 13px; margin: 0 0 10px; color: var(--muted);">Photo de profil</p>
-                    <label for="photoInput" class="upload-label">📷 Changer la photo</label>
+                    <label for="photoInput" class="upload-label"><x-icon name="camera" size="16"/> Changer la photo</label>
                     <input type="file" id="photoInput" name="photo_profil" accept="image/*" onchange="previewPhoto(event)">
                     <small style="font-size: 11px; color: var(--muted);">Max 5 MB (JPEG, PNG, GIF)</small>
                 </div>
@@ -202,7 +202,7 @@
             
             <!-- Form Actions -->
             <div class="form-actions">
-                <button type="submit" class="btn btn-navy">💾 Enregistrer les modifications</button>
+                <button type="submit" class="btn btn-navy"><x-icon name="save" size="16"/> Enregistrer les modifications</button>
                 <a href="{{ route('profil.show') }}" class="btn btn-ghost">Annuler</a>
             </div>
         </form>

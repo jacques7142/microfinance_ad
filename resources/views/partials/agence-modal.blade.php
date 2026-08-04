@@ -3,7 +3,7 @@
     <div class="modal-content">
         <div class="modal-header">
             <h2 id="modalTitle">Détails Agence</h2>
-            <button class="modal-close" onclick="closeAgenceModal()">✕</button>
+            <button class="modal-close" onclick="closeAgenceModal()"><x-icon name="x" size="20"/></button>
         </div>
         
         <div class="modal-body">
@@ -18,19 +18,19 @@
                 </div>
                 <div>
                     <div style="font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 4px;">Statut</div>
-                    <span id="modalStatut" class="badge b-green">✓ Actif</span>
+                    <span id="modalStatut" class="badge b-green"><x-icon name="check" size="12"/> Actif</span>
                 </div>
             </div>
             
             <!-- Adresse -->
             <div style="margin-bottom: 16px;">
-                <div style="font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 6px;">📍 Adresse</div>
+                <div style="font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 6px;"><x-icon name="map-pin" size="14"/> Adresse</div>
                 <div style="font-size: 13px; color: var(--ink);" id="modalAdresse">—</div>
             </div>
             
             <!-- Chef d'Agence -->
             <div style="margin-bottom: 16px;">
-                <div style="font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 6px;">👨‍💼 Chef d'Agence</div>
+                <div style="font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 6px;"><x-icon name="briefcase" size="14"/> Chef d'Agence</div>
                 <div id="modalGerant" style="padding: 12px; background: var(--bg); border-radius: 8px;">
                     <div style="font-size: 12px; font-weight: 700;">—</div>
                 </div>
@@ -38,13 +38,13 @@
             
             <!-- Contacts -->
             <div style="display: flex; gap: 8px;">
-                <a id="modalEmailBtn" href="#" class="btn btn-navy btn-sm" style="flex: 1; text-align: center;">📧 Email</a>
-                <a id="modalPhoneBtn" href="#" class="btn btn-ghost btn-sm" style="flex: 1; text-align: center;">📱 Appel</a>
+                <a id="modalEmailBtn" href="#" class="btn btn-navy btn-sm" style="flex: 1; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px;"><x-icon name="email" size="14"/> Email</a>
+                <a id="modalPhoneBtn" href="#" class="btn btn-ghost btn-sm" style="flex: 1; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px;"><x-icon name="phone" size="14"/> Appel</a>
             </div>
         </div>
         
         <div class="modal-footer">
-            <a id="modalDetailBtn" href="#" class="btn btn-navy" style="flex: 1; text-align: center;">Voir les détails complets →</a>
+            <a id="modalDetailBtn" href="#" class="btn btn-navy" style="flex: 1; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px;">Voir les détails complets <x-icon name="arrow-right" size="14"/></a>
             <button onclick="closeAgenceModal()" class="btn btn-ghost">Fermer</button>
         </div>
     </div>
@@ -136,7 +136,7 @@ function openAgenceModal(agenceId) {
             document.getElementById('modalTitle').textContent = agence.nom;
             document.getElementById('modalSocietaires').textContent = agence.societaires_count || 0;
             document.getElementById('modalAdresse').textContent = agence.adresse;
-            document.getElementById('modalStatut').textContent = agence.actif ? '✓ Actif' : '✕ Inactif';
+            document.getElementById('modalStatut').innerHTML = agence.actif ? 'Actif' : 'Inactif';
             document.getElementById('modalStatut').className = agence.actif ? 'badge b-green' : 'badge b-red';
             
             // Chef d'agence

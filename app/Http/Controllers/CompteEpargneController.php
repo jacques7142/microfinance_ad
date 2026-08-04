@@ -23,8 +23,13 @@ class CompteEpargneController extends Controller
     }
 
     /** Recherche un sociétaire et ses comptes (appelé en AJAX/GET depuis le guichet). */
-    public function comptes(Societaire $societaire): View
+    public function comptes(Request $request, Societaire $societaire): View
     {
+        $user = $request->user();
+        if ($user->role !== 'administrateur' && $societaire->agence_id !== $user->agence_id) {
+            abort(403);
+        }
+
         $societaire->load('comptesEpargne');
 
         return view('comptes_epargne.comptes', ['societaire' => $societaire]);
@@ -41,6 +46,10 @@ class CompteEpargneController extends Controller
 
         $compte = CompteEpargne::with('societaire')->findOrFail($data['compte_epargne_id']);
         $user = $request->user();
+
+        if ($user->role !== 'administrateur' && $compte->societaire->agence_id !== $user->agence_id) {
+            abort(403);
+        }
 
         if ($data['type'] === 'retrait') {
             if ($data['montant'] > (float) $compte->solde) {

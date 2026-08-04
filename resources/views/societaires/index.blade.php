@@ -4,10 +4,10 @@
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
   <form method="GET" style="display:flex;gap:8px;">
     <input type="text" name="q" value="{{ request('q') }}" placeholder="Nom, prénom ou numéro" style="padding:9px 12px;border-radius:8px;border:1px solid #e6e9f2;min-width:260px;">
-    <button class="btn btn-ghost" type="submit">Rechercher</button>
+    <button class="btn btn-ghost" type="submit"><x-icon name="search" size="14"/> Rechercher</button>
   </form>
   @if(in_array(auth()->user()->role, ['agent_credit','gerant','administrateur']))
-    <a href="{{ route('societaires.create') }}" class="btn btn-navy">+ Nouveau sociétaire</a>
+    <a href="{{ route('societaires.create') }}" class="btn btn-navy"><x-icon name="plus" size="16"/> Nouveau sociétaire</a>
   @endif
 </div>
 
@@ -21,7 +21,7 @@
         <td>{{ $s->telephone }}</td>
         <td>{{ $s->agence->nom }}</td>
         <td><span class="badge {{ $s->statut === 'actif' ? 'b-green' : 'b-amber' }}">{{ ucfirst($s->statut) }}</span></td>
-        <td><a href="{{ route('societaires.show', $s) }}" class="btn btn-ghost btn-sm">Ouvrir</a></td>
+        <td><a href="{{ route('societaires.show', $s) }}" class="btn btn-ghost btn-sm"><x-icon name="eye" size="14"/> Ouvrir</a></td>
       </tr>
     @empty
       <tr><td colspan="6" style="color:#5c6479;">Aucun sociétaire trouvé.</td></tr>

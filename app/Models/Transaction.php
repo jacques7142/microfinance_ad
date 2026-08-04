@@ -18,7 +18,7 @@ class Transaction extends Model
     public const TYPE_CORRECTION = 'correction';
 
     protected $fillable = [
-        'agence_id', 'utilisateur_id', 'compte_epargne_id', 'compte_tontine_id', 'credit_id',
+        'agence_id', 'utilisateur_id', 'societaire_id', 'compte_epargne_id', 'compte_tontine_id', 'credit_id',
         'type', 'montant', 'date_operation', 'statut', 'corrigee',
     ];
 
@@ -40,6 +40,11 @@ class Transaction extends Model
     public function utilisateur(): BelongsTo
     {
         return $this->belongsTo(User::class, 'utilisateur_id');
+    }
+
+    public function societaire(): BelongsTo
+    {
+        return $this->belongsTo(Societaire::class);
     }
 
     public function compteEpargne(): BelongsTo

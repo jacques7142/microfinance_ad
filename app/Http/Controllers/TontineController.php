@@ -88,9 +88,15 @@ class TontineController extends Controller
     /** Le caissier valide les collectes du jour en fin de journée. */
     public function valider(Request $request, CollecteTontine $collecte): RedirectResponse
     {
-        abort_unless($request->user()->role === 'caissier', 403);
+        $user = $request->user();
+        abort_unless($user->role === 'caissier', 403);
 
-        $collecte->update(['caissier_id' => $request->user()->id, 'statut_validation' => 'validee']);
+        $collecte->load('compteTontine.societaire');
+        if ($collecte->compteTontine->societaire->agence_id !== $user->agence_id) {
+            abort(403);
+        }
+
+        $collecte->update(['caissier_id' => $user->id, 'statut_validation' => 'validee']);
 
         JournalActivite::enregistrer('validation_collecte', "Collecte tontine #{$collecte->id} validée par le caissier", $collecte);
 

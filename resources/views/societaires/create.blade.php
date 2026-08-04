@@ -16,7 +16,7 @@
       <div class="field"><label>Part sociale (F CFA)</label><input type="number" step="0.01" name="part_sociale" value="5000" required></div>
       <div class="field"><label>Droit d'adhésion (F CFA)</label><input type="number" step="0.01" name="droit_adhesion" value="2000" required></div>
     </div>
-    <button class="btn btn-navy" type="submit">Enregistrer le sociétaire</button>
+    <button class="btn btn-navy" type="submit"><x-icon name="save" size="16"/> Enregistrer le sociétaire</button>
   </form>
 </div>
 @endsection

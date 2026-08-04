@@ -22,7 +22,7 @@
   <form method="POST" action="{{ route('credits.instruire', $credit) }}">
     @csrf
     <div class="field"><label>Avis</label><textarea name="avis_agent" rows="3" required></textarea></div>
-    <button class="btn btn-navy" type="submit">Transmettre au gérant</button>
+    <button class="btn btn-navy" type="submit"><x-icon name="arrow-right" size="14"/> Transmettre au gérant</button>
   </form>
 </div>
 @endif
@@ -30,10 +30,10 @@
 @if(auth()->user()->role === 'gerant' && $credit->statut === 'transmise_gerant')
 <div class="section-title"><h2>Décision</h2></div>
 <div class="card card-pad" style="display:flex;gap:10px;">
-  <form method="POST" action="{{ route('credits.valider', $credit) }}">@csrf<button class="btn btn-navy" type="submit">Valider</button></form>
+  <form method="POST" action="{{ route('credits.valider', $credit) }}">@csrf<button class="btn btn-navy" type="submit"><x-icon name="check" size="14"/> Valider</button></form>
   <form method="POST" action="{{ route('credits.rejeter', $credit) }}" onsubmit="return confirm('Confirmer le rejet ?');">
     @csrf<input type="hidden" name="motif_rejet" value="Dossier ne répondant pas aux critères de l'agence.">
-    <button class="btn btn-danger" type="submit">Rejeter</button>
+    <button class="btn btn-danger" type="submit"><x-icon name="x" size="14"/> Rejeter</button>
   </form>
 </div>
 @endif

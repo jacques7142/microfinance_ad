@@ -36,7 +36,7 @@
         <td>{{ $credit->libelleType() }}</td>
         <td>{{ number_format($credit->montant,0,',',' ') }} F</td>
         <td><span class="badge b-navy">{{ ucfirst(str_replace('_',' ',$credit->statut)) }}</span></td>
-        <td><a href="{{ route('credits.show', $credit) }}" class="btn btn-ghost btn-sm">Ouvrir</a></td>
+        <td><a href="{{ route('credits.show', $credit) }}" class="btn btn-ghost btn-sm"><x-icon name="eye" size="14"/> Ouvrir</a></td>
       </tr>
     @empty
       <tr><td colspan="4" style="color:#5c6479;">Aucun crédit.</td></tr>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Agence;
 use App\Models\CollecteTontine;
 use App\Models\Credit;
+use App\Models\Rapport;
 use App\Models\Societaire;
 use App\Models\Transaction;
 use App\Models\User;
@@ -120,11 +121,32 @@ class DashboardController extends Controller
             ->orderByDesc('date_demande')
             ->get();
 
+        $nbCreditsEnAttente = $creditsAValider->count();
+
+        $encoursCredit = Credit::whereHas('societaire', fn ($q) => $q->where('agence_id', $agenceId))
+            ->where('statut', Credit::STATUT_VALIDEE)
+            ->sum('montant');
+
+        $nbCreditsMois = Credit::whereHas('societaire', fn ($q) => $q->where('agence_id', $agenceId))
+            ->whereMonth('date_demande', now()->month)
+            ->whereYear('date_demande', now()->year)
+            ->count();
+
+        $nbSocietaires = Societaire::where('agence_id', $agenceId)->count();
+
+        $derniersRapports = Rapport::with('agence', 'utilisateur')
+            ->where('agence_id', $agenceId)
+            ->latest('date_generation')
+            ->take(5)
+            ->get();
+
         return view('dashboards.gerant', [
             'creditsAValider' => $creditsAValider,
-            'portefeuille' => Credit::whereHas('societaire', fn ($q) => $q->where('agence_id', $agenceId))
-                ->where('statut', Credit::STATUT_VALIDEE)->sum('montant'),
-            'nbSocietaires' => Societaire::where('agence_id', $agenceId)->count(),
+            'portefeuille' => $encoursCredit,
+            'nbSocietaires' => $nbSocietaires,
+            'nbCreditsEnAttente' => $nbCreditsEnAttente,
+            'nbCreditsMois' => $nbCreditsMois,
+            'derniersRapports' => $derniersRapports,
         ]);
     }
 
@@ -173,10 +195,12 @@ class DashboardController extends Controller
 
     private function comptable(User $user): View
     {
+        $agenceId = $user->agence_id;
+
         return view('dashboards.comptable', [
-            'totalEpargne' => \App\Models\CompteEpargne::sum('solde'),
-            'encoursCredit' => Credit::where('statut', Credit::STATUT_VALIDEE)->sum('montant'),
-            'creditsParType' => Credit::selectRaw('type, count(*) as total')->groupBy('type')->get(),
+            'totalEpargne' => \App\Models\CompteEpargne::whereHas('societaire', fn ($q) => $q->where('agence_id', $agenceId))->sum('solde'),
+            'encoursCredit' => Credit::where('statut', Credit::STATUT_VALIDEE)->whereHas('societaire', fn ($q) => $q->where('agence_id', $agenceId))->sum('montant'),
+            'creditsParType' => Credit::whereHas('societaire', fn ($q) => $q->where('agence_id', $agenceId))->selectRaw('type, count(*) as total')->groupBy('type')->get(),
         ]);
     }
 }

@@ -8,8 +8,18 @@ use Illuminate\View\View;
 
 class AgenceDetailController extends Controller
 {
-    public function show(Agence $agence): View
+    private function autorise(Request $request, Agence $agence): void
     {
+        $user = $request->user();
+        if ($user->role !== 'administrateur' && $agence->id !== $user->agence_id) {
+            abort(403);
+        }
+    }
+
+    public function show(Request $request, Agence $agence): View
+    {
+        $this->autorise($request, $agence);
+
         $gerant = $agence->gerant();
         $statAgence = $agence->actif ? 'Actif' : 'Inactif';
         
@@ -24,8 +34,10 @@ class AgenceDetailController extends Controller
         ]);
     }
 
-    public function modal(Agence $agence)
+    public function modal(Request $request, Agence $agence)
     {
+        $this->autorise($request, $agence);
+
         $gerant = $agence->gerant();
         
         return response()->json([
