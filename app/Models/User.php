@@ -58,10 +58,54 @@ class User extends Authenticatable
         return $this->role === $role;
     }
 
+    /** Vérifie si l'utilisateur possède le rôle (principal ou additionnel). */
+    public function hasRole(string $role): bool
+    {
+        return $this->role === $role
+            || $this->rolesAdditionnels()->where('role', $role)->exists();
+    }
+
+    /** Vérifie si l'utilisateur possède au moins un des rôles donnés. */
+    public function aUnRole(array $roles): bool
+    {
+        foreach ($roles as $role) {
+            if ($this->hasRole($role)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /** Tous les rôles attribués (principal d'abord, puis les additionnels). */
+    public function rolesAttribues(): array
+    {
+        return array_values(array_unique([
+            $this->role,
+            ...$this->rolesAdditionnels->pluck('role')->all(),
+        ]));
+    }
+
     // --- Relations ---
     public function agence(): BelongsTo
     {
         return $this->belongsTo(Agence::class);
+    }
+
+    /** Rôles additionnels attribués à cet utilisateur. */
+    public function rolesAdditionnels(): HasMany
+    {
+        return $this->hasMany(UserRole::class, 'user_id');
+    }
+
+    /** Remplace la liste des rôles additionnels d'un utilisateur. */
+    public function syncRolesAdditionnels(array $roles): void
+    {
+        $this->rolesAdditionnels()->whereNotIn('role', $roles)->delete();
+
+        foreach ($roles as $role) {
+            $this->rolesAdditionnels()->firstOrCreate(['role' => $role]);
+        }
     }
 
     public function creditsInstruits(): HasMany

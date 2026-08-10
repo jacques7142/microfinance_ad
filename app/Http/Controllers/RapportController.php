@@ -15,8 +15,8 @@ class RapportController extends Controller
         $user = $request->user();
 
         $rapports = Rapport::with('agence', 'utilisateur')
-            ->when(in_array($user->role, ['gerant', 'comptable']), fn ($q) => $q->where('agence_id', $user->agence_id))
-            ->when(!in_array($user->role, ['administrateur', 'comptable', 'gerant']), fn ($q) => $q->where('utilisateur_id', $user->id))
+            ->when($user->aUnRole(['gerant', 'comptable']), fn ($q) => $q->where('agence_id', $user->agence_id))
+            ->when(!$user->aUnRole(['administrateur', 'comptable', 'gerant']), fn ($q) => $q->where('utilisateur_id', $user->id))
             ->orderByDesc('date_generation')
             ->paginate(15);
 
@@ -26,8 +26,8 @@ class RapportController extends Controller
     private function autorise(Rapport $rapport): void
     {
         $user = request()->user();
-        if ($user->role === 'administrateur') return;
-        if (in_array($user->role, ['gerant', 'comptable']) && $rapport->agence_id === $user->agence_id) return;
+        if ($user->hasRole('administrateur')) return;
+        if ($user->aUnRole(['gerant', 'comptable']) && $rapport->agence_id === $user->agence_id) return;
         if ($rapport->utilisateur_id === $user->id) return;
         abort(403);
     }
@@ -84,7 +84,7 @@ class RapportController extends Controller
 
         $user = $request->user();
         $data['utilisateur_id'] = $user->id;
-        $data['agence_id'] = $user->role === 'administrateur'
+        $data['agence_id'] = $user->hasRole('administrateur')
             ? ($data['agence_id'] ?? null)
             : $user->agence_id;
         $data['date_generation'] = now();

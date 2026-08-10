@@ -12,7 +12,25 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         $siege = Agence::where('est_siege', true)->first();
+        if (! $siege) {
+            $siege = Agence::create([
+                'nom' => 'Direction Générale',
+                'ville' => 'Lomé',
+                'adresse' => 'Kodjoviakopé, Lomé',
+                'date_ouverture' => '2001-04-23',
+                'est_siege' => true,
+            ]);
+        }
+
         $kodjoviakope = Agence::where('nom', 'Agence Kodjoviakopé')->first();
+        if (! $kodjoviakope) {
+            $kodjoviakope = Agence::create([
+                'nom' => 'Agence Kodjoviakopé',
+                'ville' => 'Lomé',
+                'adresse' => 'Kodjoviakopé, Lomé',
+                'date_ouverture' => '2001-04-23',
+            ]);
+        }
 
         $motDePasse = Hash::make('coopecad2026');
 

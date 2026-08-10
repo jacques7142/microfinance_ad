@@ -89,7 +89,7 @@ class TontineController extends Controller
     public function valider(Request $request, CollecteTontine $collecte): RedirectResponse
     {
         $user = $request->user();
-        abort_unless($user->role === 'caissier', 403);
+        abort_unless($user->hasRole('caissier'), 403);
 
         $collecte->load('compteTontine.societaire');
         if ($collecte->compteTontine->societaire->agence_id !== $user->agence_id) {

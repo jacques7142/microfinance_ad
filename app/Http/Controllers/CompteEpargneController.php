@@ -26,7 +26,7 @@ class CompteEpargneController extends Controller
     public function comptes(Request $request, Societaire $societaire): View
     {
         $user = $request->user();
-        if ($user->role !== 'administrateur' && $societaire->agence_id !== $user->agence_id) {
+        if (!$user->hasRole('administrateur') && $societaire->agence_id !== $user->agence_id) {
             abort(403);
         }
 
@@ -47,7 +47,7 @@ class CompteEpargneController extends Controller
         $compte = CompteEpargne::with('societaire')->findOrFail($data['compte_epargne_id']);
         $user = $request->user();
 
-        if ($user->role !== 'administrateur' && $compte->societaire->agence_id !== $user->agence_id) {
+        if (!$user->hasRole('administrateur') && $compte->societaire->agence_id !== $user->agence_id) {
             abort(403);
         }
 

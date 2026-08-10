@@ -6,7 +6,7 @@
     <input type="text" name="q" value="{{ request('q') }}" placeholder="Nom, prénom ou numéro" style="padding:9px 12px;border-radius:8px;border:1px solid #e6e9f2;min-width:260px;">
     <button class="btn btn-ghost" type="submit"><x-icon name="search" size="14"/> Rechercher</button>
   </form>
-  @if(in_array(auth()->user()->role, ['agent_credit','gerant','administrateur']))
+  @if(auth()->user()->aUnRole(['agent_credit','gerant','administrateur']))
     <a href="{{ route('societaires.create') }}" class="btn btn-navy"><x-icon name="plus" size="16"/> Nouveau sociétaire</a>
   @endif
 </div>

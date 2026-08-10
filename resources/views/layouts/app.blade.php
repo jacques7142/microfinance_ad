@@ -108,7 +108,7 @@ td{padding:11px 20px;border-bottom:1px solid var(--line);}
       @php
         $messagesNonLus = App\Models\Message::where('expediteur', 'societaire')
             ->where('lu', false)
-            ->when(auth()->user()->role !== 'administrateur', fn ($q) => $q->whereHas('societaire', fn ($sq) => $sq->where('agence_id', auth()->user()->agence_id)))
+            ->when(!auth()->user()->hasRole('administrateur'), fn ($q) => $q->whereHas('societaire', fn ($sq) => $sq->where('agence_id', auth()->user()->agence_id)))
             ->count();
       @endphp
       <a href="{{ route('messages.index') }}" class="nav-item {{ request()->routeIs('messages.*') ? 'active' : '' }}">
@@ -116,21 +116,21 @@ td{padding:11px 20px;border-bottom:1px solid var(--line);}
         @if($messagesNonLus > 0)<span style="margin-left:auto;background:var(--gold);color:var(--navy);font-size:10.5px;font-weight:800;min-width:18px;height:18px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;padding:0 5px;">{{ $messagesNonLus }}</span>@endif
       </a>
 
-      @if(auth()->user()->role === 'caissier')
+      @if(auth()->user()->hasRole('caissier'))
         <div class="nav-label">Guichet</div>
         <a href="{{ route('epargne.index') }}" class="nav-item {{ request()->routeIs('epargne.*') ? 'active' : '' }}">
           <x-icon name="wallet" size="18"/> Dépôts / retraits
         </a>
       @endif
 
-      @if(auth()->user()->role === 'agent_promotion')
+      @if(auth()->user()->hasRole('agent_promotion'))
         <div class="nav-label">Tontine LOGOKU</div>
         <a href="{{ route('tontine.index') }}" class="nav-item {{ request()->routeIs('tontine.*') ? 'active' : '' }}">
           <x-icon name="tontine" size="18"/> Ma tournée
         </a>
       @endif
 
-      @if(in_array(auth()->user()->role, ['agent_credit','gerant','administrateur']))
+      @if(auth()->user()->aUnRole(['agent_credit','gerant','administrateur']))
         <div class="nav-label">Gestion</div>
         <a href="{{ route('societaires.create') }}" class="nav-item {{ request()->routeIs('societaires.create') ? 'active' : '' }}">
           <x-icon name="plus" size="18"/> Nouveau sociétaire
@@ -140,14 +140,14 @@ td{padding:11px 20px;border-bottom:1px solid var(--line);}
         </a>
       @endif
 
-      @if(in_array(auth()->user()->role, ['comptable','gerant','administrateur']))
+      @if(auth()->user()->aUnRole(['comptable','gerant','administrateur']))
         <div class="nav-label">Reporting</div>
         <a href="{{ route('rapports.index') }}" class="nav-item {{ request()->routeIs('rapports.*') ? 'active' : '' }}">
           <x-icon name="chart" size="18"/> Rapports
         </a>
       @endif
 
-      @if(auth()->user()->role === 'administrateur')
+      @if(auth()->user()->hasRole('administrateur'))
         <div class="nav-label">Administration</div>
         <a href="{{ route('admin.users.index') }}" class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
           <x-icon name="user-check" size="18"/> Utilisateurs
@@ -161,7 +161,7 @@ td{padding:11px 20px;border-bottom:1px solid var(--line);}
       @endif
     </div>
     <div class="sidebar-foot">
-      {{ auth()->user()->nomComplet() }} — {{ ucfirst(str_replace('_',' ', auth()->user()->role)) }}<br>
+      {{ auth()->user()->nomComplet() }} — {{ implode(', ', array_map(fn ($r) => ucfirst(str_replace('_',' ', $r)), auth()->user()->rolesAttribues())) }}<br>
       <form method="POST" action="{{ route('logout') }}" style="margin-top:8px;">@csrf<button type="submit"><x-icon name="logout" size="15"/> Se déconnecter</button></form>
     </div>
   </aside>
@@ -183,7 +183,7 @@ td{padding:11px 20px;border-bottom:1px solid var(--line);}
         </div>
         <div style="font-size: 13px;">
           <div style="font-weight: 600;">{{ auth()->user()->nomComplet() }}</div>
-          <div style="font-size: 11px; color: var(--muted);">{{ ucfirst(str_replace('_', ' ', auth()->user()->role)) }}</div>
+          <div style="font-size: 11px; color: var(--muted);">{{ implode(', ', array_map(fn ($r) => ucfirst(str_replace('_', ' ', $r)), auth()->user()->rolesAttribues())) }}</div>
         </div>
         <div class="profile-dropdown" id="profileDropdown">
           <a href="{{ route('profil.show') }}" class="profile-dropdown-item"><x-icon name="profile" size="16"/> Mon profil</a>

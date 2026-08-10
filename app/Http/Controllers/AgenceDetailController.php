@@ -11,7 +11,7 @@ class AgenceDetailController extends Controller
     private function autorise(Request $request, Agence $agence): void
     {
         $user = $request->user();
-        if ($user->role !== 'administrateur' && $agence->id !== $user->agence_id) {
+        if (!$user->hasRole('administrateur') && $agence->id !== $user->agence_id) {
             abort(403);
         }
     }

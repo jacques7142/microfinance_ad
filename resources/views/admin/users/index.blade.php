@@ -16,7 +16,11 @@
           </div>
         </td>
         <td>{{ $u->email }}</td>
-        <td><span class="badge b-navy">{{ ucfirst(str_replace('_',' ',$u->role)) }}</span></td>
+        <td>
+          @foreach($u->rolesAttribues() as $role)
+            <span class="badge b-navy" style="margin-right:4px;">{{ ucfirst(str_replace('_',' ',$role)) }}</span>
+          @endforeach
+        </td>
         <td>{{ $u->agence->nom ?? '—' }}</td>
         <td><span class="badge {{ $u->actif ? 'b-green' : 'b-red' }}">{{ $u->actif ? 'Actif' : 'Désactivé' }}</span></td>
         <td>

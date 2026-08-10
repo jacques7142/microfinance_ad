@@ -15,7 +15,7 @@
           <option value="csv">CSV</option>
         </select>
       </div>
-      @if(in_array(auth()->user()->role, ['administrateur','comptable']))
+      @if(auth()->user()->aUnRole(['administrateur','comptable']))
         <div class="field"><label>Agence (laisser vide = consolidé multi-agences)</label>
           <select name="agence_id">
             <option value="">Toutes agences (consolidé)</option>

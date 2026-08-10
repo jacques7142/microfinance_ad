@@ -16,7 +16,7 @@
   @if($credit->avis_agent)<p><b>Avis de l'agent de crédit :</b> {{ $credit->avis_agent }}</p>@endif
 </div>
 
-@if(auth()->user()->role === 'agent_credit' && $credit->statut === 'recue')
+@if(auth()->user()->hasRole('agent_credit') && $credit->statut === 'recue')
 <div class="section-title"><h2>Instruire le dossier</h2></div>
 <div class="card card-pad">
   <form method="POST" action="{{ route('credits.instruire', $credit) }}">
@@ -27,7 +27,7 @@
 </div>
 @endif
 
-@if(auth()->user()->role === 'gerant' && $credit->statut === 'transmise_gerant')
+@if(auth()->user()->hasRole('gerant') && $credit->statut === 'transmise_gerant')
 <div class="section-title"><h2>Décision</h2></div>
 <div class="card card-pad" style="display:flex;gap:10px;">
   <form method="POST" action="{{ route('credits.valider', $credit) }}">@csrf<button class="btn btn-navy" type="submit"><x-icon name="check" size="14"/> Valider</button></form>

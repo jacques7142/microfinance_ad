@@ -15,10 +15,11 @@
     </div>
     <div class="grid g2">
       <div class="field">
-        <label>Rôle</label>
+        <label>Rôle principal</label>
         <select name="role" id="roleSelect" required onchange="
           document.getElementById('seuilBlock').style.display = this.value === 'gerant' ? 'block' : 'none';
           document.getElementById('zoneBlock').style.display = this.value === 'agent_promotion' ? 'block' : 'none';
+          document.querySelectorAll('.role-additionnel').forEach(cb => cb.disabled = cb.value === this.value);
         ">
           @foreach($roles as $r)
             <option value="{{ $r }}" {{ $user->role === $r ? 'selected' : '' }}>{{ ucfirst(str_replace('_',' ',$r)) }}</option>
@@ -33,6 +34,21 @@
           @endforeach
         </select>
       </div>
+    </div>
+    <div class="field">
+      <label>Rôles additionnels</label>
+      @php $additionnels = array_values(array_diff($user->rolesAttribues(), [$user->role])); @endphp
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;">
+        @foreach($roles as $r)
+          <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;">
+            <input type="checkbox" name="roles_additionnels[]" value="{{ $r }}" class="role-additionnel"
+                   {{ in_array($r, $additionnels) ? 'checked' : '' }}
+                   {{ $r === $user->role ? 'disabled' : '' }}>
+            {{ ucfirst(str_replace('_',' ',$r)) }}
+          </label>
+        @endforeach
+      </div>
+      <small style="color:var(--muted);font-size:11px;">Un utilisateur peut cumuler plusieurs rôles. Le rôle principal détermine son tableau de bord.</small>
     </div>
     <div class="field" id="seuilBlock" style="display:{{ $user->role === 'gerant' ? 'block' : 'none' }};">
       <label>Seuil de validation crédit (F CFA)</label>

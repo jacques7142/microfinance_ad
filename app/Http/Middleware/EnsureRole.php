@@ -17,7 +17,7 @@ class EnsureRole
     {
         $user = $request->user();
 
-        if (! $user || ! in_array($user->role, $roles, true)) {
+        if (! $user || ! $user->aUnRole($roles)) {
             JournalActivite::enregistrer(
                 'acces_refuse',
                 "Tentative d'accès à {$request->path()} sans le rôle requis (".implode(',', $roles).')',

@@ -15,7 +15,7 @@ class UserController extends Controller
 {
     public function index(): View
     {
-        $utilisateurs = User::with('agence')->orderBy('role')->orderBy('nom')->paginate(25);
+        $utilisateurs = User::with('agence', 'rolesAdditionnels')->orderBy('role')->orderBy('nom')->paginate(25);
 
         return view('admin.users.index', ['utilisateurs' => $utilisateurs]);
     }
@@ -36,19 +36,28 @@ class UserController extends Controller
             'email' => ['required', 'email', 'unique:users,email'],
             'telephone' => ['nullable', 'string', 'max:30'],
             'role' => ['required', 'in:'.implode(',', User::ROLES)],
+            'roles_additionnels' => ['nullable', 'array'],
+            'roles_additionnels.*' => ['in:'.implode(',', User::ROLES)],
             'agence_id' => ['required', 'exists:agences,id'],
             'seuil_validation' => ['nullable', 'numeric', 'min:0'],
             'zone_tournee' => ['nullable', 'string', 'max:255'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
-        $data['password'] = Hash::make('coopecad2026'); // mot de passe temporaire — à faire changer à la première connexion
+        $rolesAdditionnels = array_values(array_diff(
+            $data['roles_additionnels'] ?? [],
+            [$data['role']]
+        ));
+
+        $data['password'] = Hash::make($data['password']);
         $data['actif'] = true;
 
         $user = User::create($data);
+        $user->syncRolesAdditionnels($rolesAdditionnels);
 
         JournalActivite::enregistrer('creation_utilisateur', "Création du compte {$user->email} ({$user->role})", $user);
 
-        return redirect()->route('admin.users.index')->with('success', 'Utilisateur créé. Mot de passe temporaire : coopecad2026');
+        return redirect()->route('admin.users.index')->with('success', "Utilisateur créé. Mot de passe à communiquer à {$user->nomComplet()} : {$request->password}");
     }
 
     public function edit(User $user): View
@@ -68,6 +77,8 @@ class UserController extends Controller
             'email' => ['required', 'email', 'unique:users,email,'.$user->id],
             'telephone' => ['nullable', 'string', 'max:30'],
             'role' => ['required', 'in:'.implode(',', User::ROLES)],
+            'roles_additionnels' => ['nullable', 'array'],
+            'roles_additionnels.*' => ['in:'.implode(',', User::ROLES)],
             'agence_id' => ['required', 'exists:agences,id'],
             'seuil_validation' => ['nullable', 'numeric', 'min:0'],
             'zone_tournee' => ['nullable', 'string', 'max:255'],
@@ -75,6 +86,11 @@ class UserController extends Controller
         ]);
 
         $user->update($data);
+
+        $user->syncRolesAdditionnels(array_values(array_diff(
+            $data['roles_additionnels'] ?? [],
+            [$data['role']]
+        )));
 
         JournalActivite::enregistrer('modification_utilisateur', "Modification du compte {$user->email}", $user);
 

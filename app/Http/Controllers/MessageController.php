@@ -63,7 +63,7 @@ class MessageController extends Controller
 
         $conversations = Societaire::with(['agence'])
             ->whereHas('messages')
-            ->when($user->role !== 'administrateur', fn ($q) => $q->where('agence_id', $user->agence_id))
+            ->when(!$user->hasRole('administrateur'), fn ($q) => $q->where('agence_id', $user->agence_id))
             ->withCount(['messages as non_lus' => fn ($q) => $q->where('expediteur', Message::EXPEDITEUR_SOCIETAIRE)->where('lu', false)])
             ->with(['messages' => fn ($q) => $q->orderByDesc('date_envoi')->limit(1)])
             ->orderByDesc('non_lus')
@@ -76,7 +76,7 @@ class MessageController extends Controller
     public function staffShow(Request $request, Societaire $societaire): View
     {
         $user = $request->user();
-        if ($user->role !== 'administrateur' && $societaire->agence_id !== $user->agence_id) {
+        if (!$user->hasRole('administrateur') && $societaire->agence_id !== $user->agence_id) {
             abort(403);
         }
 
@@ -99,7 +99,7 @@ class MessageController extends Controller
     public function staffReply(Request $request, Societaire $societaire): RedirectResponse
     {
         $user = $request->user();
-        if ($user->role !== 'administrateur' && $societaire->agence_id !== $user->agence_id) {
+        if (!$user->hasRole('administrateur') && $societaire->agence_id !== $user->agence_id) {
             abort(403);
         }
 

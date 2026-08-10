@@ -145,7 +145,7 @@
         <div class="meta">{{ $user->email }}</div>
         
         @if($authType === 'user')
-            <span class="role">{{ ucfirst(str_replace('_', ' ', $user->role)) }}</span>
+            <span class="role">{{ implode(', ', array_map(fn ($r) => ucfirst(str_replace('_', ' ', $r)), $user->rolesAttribues())) }}</span>
             @if($user->agence)
                 <div class="meta" style="margin-top: 8px;"><x-icon name="map-pin" size="14" style="vertical-align: middle;"/> {{ $user->agence->nom }}</div>
             @endif
@@ -188,8 +188,8 @@
         
         @if($authType === 'user')
             <div class="info-item">
-                <div class="info-label">Rôle</div>
-                <div class="info-value">{{ ucfirst(str_replace('_', ' ', $user->role)) }}</div>
+                <div class="info-label">Rôle(s)</div>
+                <div class="info-value">{{ implode(', ', array_map(fn ($r) => ucfirst(str_replace('_', ' ', $r)), $user->rolesAttribues())) }}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Statut</div>

@@ -20,7 +20,7 @@ class CreditController extends Controller
         $user = $request->user();
 
         $credits = Credit::with(['societaire', 'agentCredit', 'gerant'])
-            ->when($user->role !== User::ROLE_ADMIN, fn ($q) => $q->whereHas('societaire', fn ($sq) => $sq->where('agence_id', $user->agence_id)))
+            ->when(!$user->hasRole(User::ROLE_ADMIN), fn ($q) => $q->whereHas('societaire', fn ($sq) => $sq->where('agence_id', $user->agence_id)))
             ->orderByDesc('date_demande')
             ->paginate(20);
 
@@ -32,7 +32,7 @@ class CreditController extends Controller
         $user = $request->user();
 
         return view('credits.create', [
-            'societaires' => Societaire::when($user->role !== User::ROLE_ADMIN, fn ($q) => $q->where('agence_id', $user->agence_id))
+            'societaires' => Societaire::when(!$user->hasRole(User::ROLE_ADMIN), fn ($q) => $q->where('agence_id', $user->agence_id))
                 ->orderBy('nom')->get(['id', 'nom', 'prenom', 'numero_societaire']),
             'sousTypesOrdinaire' => Credit::SOUS_TYPES_ORDINAIRE,
         ]);
@@ -53,7 +53,7 @@ class CreditController extends Controller
 
         $user = $request->user();
         $societaire = Societaire::with('compteTontine')->findOrFail($data['societaire_id']);
-        if ($user->role !== User::ROLE_ADMIN && $societaire->agence_id !== $user->agence_id) {
+        if (!$user->hasRole(User::ROLE_ADMIN) && $societaire->agence_id !== $user->agence_id) {
             abort(403);
         }
 
@@ -74,7 +74,7 @@ class CreditController extends Controller
             $data['proportion_garantie'] = round(($data['montant'] / (float) $compteTontine->solde_accumule) * 100, 2);
         }
 
-        $data['agent_credit_id'] = $request->user()->role === User::ROLE_AGENT_CREDIT ? $request->user()->id : null;
+        $data['agent_credit_id'] = $request->user()->hasRole(User::ROLE_AGENT_CREDIT) ? $request->user()->id : null;
         $data['date_demande'] = now();
         $data['statut'] = Credit::STATUT_RECUE;
 
@@ -88,7 +88,7 @@ class CreditController extends Controller
     public function show(Request $request, Credit $credit): View
     {
         $user = $request->user();
-        if ($user->role !== User::ROLE_ADMIN && $credit->societaire->agence_id !== $user->agence_id) {
+        if (!$user->hasRole(User::ROLE_ADMIN) && $credit->societaire->agence_id !== $user->agence_id) {
             abort(403);
         }
 
@@ -189,6 +189,6 @@ class CreditController extends Controller
 
     private function authorizeRole(Request $request, array $roles): void
     {
-        abort_unless(in_array($request->user()->role, $roles, true), 403);
+        abort_unless($request->user()->aUnRole($roles), 403);
     }
 }

@@ -2,7 +2,7 @@
 @section('title', 'Crédits')
 @section('content')
 <div style="display:flex;justify-content:flex-end;margin-bottom:14px;">
-  @if(in_array(auth()->user()->role, ['agent_credit','gerant','administrateur']))
+  @if(auth()->user()->aUnRole(['agent_credit','gerant','administrateur']))
     <a href="{{ route('credits.create') }}" class="btn btn-navy"><x-icon name="plus" size="16"/> Nouvelle demande</a>
   @endif
 </div>
