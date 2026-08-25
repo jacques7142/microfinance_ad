@@ -19,7 +19,7 @@ class Transaction extends Model
 
     protected $fillable = [
         'agence_id', 'utilisateur_id', 'societaire_id', 'compte_epargne_id', 'compte_tontine_id', 'credit_id',
-        'type', 'montant', 'date_operation', 'statut', 'corrigee',
+        'type', 'montant', 'date_operation', 'statut', 'corrigee', 'signature', 'signe_le',
     ];
 
     protected function casts(): array
@@ -28,7 +28,22 @@ class Transaction extends Model
             'date_operation' => 'datetime',
             'montant' => 'decimal:2',
             'corrigee' => 'boolean',
+            'signe_le' => 'datetime',
         ];
+    }
+
+    /** Libellé lisible du type d'opération. */
+    public function libelleType(): string
+    {
+        return match ($this->type) {
+            self::TYPE_DEPOT => 'Dépôt',
+            self::TYPE_RETRAIT => 'Retrait',
+            self::TYPE_REMBOURSEMENT => 'Remboursement',
+            self::TYPE_COLLECTE_TONTINE => 'Collecte tontine',
+            self::TYPE_DECAISSEMENT_CREDIT => 'Décaissement crédit',
+            self::TYPE_CORRECTION => 'Correction',
+            default => $this->type,
+        };
     }
 
     // --- Relations ---

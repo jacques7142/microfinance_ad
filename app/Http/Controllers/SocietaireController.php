@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CompteEpargne;
 use App\Models\JournalActivite;
 use App\Models\Societaire;
 use Illuminate\Http\RedirectResponse;
@@ -51,6 +52,13 @@ class SocietaireController extends Controller
         $data['statut'] = 'actif';
 
         $societaire = Societaire::create($data);
+
+        CompteEpargne::create([
+            'societaire_id' => $societaire->id,
+            'type' => CompteEpargne::TYPE_DAV,
+            'solde' => 0,
+            'date_ouverture' => now(),
+        ]);
 
         JournalActivite::enregistrer('creation_societaire', "Création du sociétaire {$societaire->numero_societaire}", $societaire);
 

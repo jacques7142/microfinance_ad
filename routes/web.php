@@ -10,6 +10,8 @@ use App\Http\Controllers\CompteEpargneController;
 use App\Http\Controllers\CreditController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\ParametresController;
+use App\Http\Controllers\PaiementMobileController;
 use App\Http\Controllers\ProfilController;
 use App\Http\Controllers\RapportController;
 use App\Http\Controllers\SocietaireController;
@@ -29,8 +31,14 @@ Route::middleware('guest')->group(function () {
 });
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
+// Webhook LigdiCash — accessible publiquement (sans session, sans CSRF).
+Route::post('/api/paiement/callback', [PaiementMobileController::class, 'callback'])->name('paiement.callback');
+
 Route::middleware('auth:societaire')->group(function () {
     Route::get('/espace-societaire', [SocietairePortalController::class, 'dashboard'])->name('societaire.dashboard');
+    Route::get('/mon-compte', [SocietairePortalController::class, 'monCompte'])->name('societaire.mon-compte');
+    Route::post('/mon-compte/notifications/lues', [SocietairePortalController::class, 'lireNotifications'])->name('societaire.notifications.lues');
+    Route::post('/notifications/lues', [SocietairePortalController::class, 'markNotificationsRead'])->name('societaire.notifications.read');
     Route::get('/demande-credit', [SocietaireCreditController::class, 'create'])->name('societaire.credit.create');
     Route::post('/demande-credit', [SocietaireCreditController::class, 'store'])->name('societaire.credit.store');
     Route::get('/depot', [SocietaireOperationController::class, 'depotForm'])->name('societaire.depot');
@@ -39,9 +47,14 @@ Route::middleware('auth:societaire')->group(function () {
     Route::post('/retrait', [SocietaireOperationController::class, 'retrait'])->name('societaire.retrait.store');
     Route::get('/remboursement', [SocietaireOperationController::class, 'remboursementForm'])->name('societaire.remboursement');
     Route::post('/remboursement', [SocietaireOperationController::class, 'rembourser'])->name('societaire.remboursement.store');
+    Route::get('/paiements', [SocietaireOperationController::class, 'paiements'])->name('societaire.paiements');
+    Route::get('/paiements/{paiement}', [SocietaireOperationController::class, 'statutPaiement'])->name('societaire.paiement.statut');
+    Route::get('/paiements/{paiement}/statut', [PaiementMobileController::class, 'statut'])->name('societaire.paiement.statut.api');
 
     Route::get('/messagerie', [MessageController::class, 'societaireIndex'])->name('societaire.messages');
     Route::post('/messagerie', [MessageController::class, 'societaireSend'])->name('societaire.messages.send');
+
+    Route::get('/mes-parametres', [ParametresController::class, 'index'])->name('societaire.parametres');
 });
 
 // --- Authentifié : tous rôles internes confondus ---
@@ -54,6 +67,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/profil/modifier', [ProfilController::class, 'edit'])->name('profil.edit');
     Route::put('/profil', [ProfilController::class, 'update'])->name('profil.update');
     Route::post('/profil/photo', [ProfilController::class, 'uploadPhoto'])->name('profil.upload-photo');
+
+    // Paramètres de l'application (préférences locales).
+    Route::get('/parametres', [ParametresController::class, 'index'])->name('parametres.index');
 
     // Messagerie sociétaires : accessible à tout le personnel de la coopérative.
     Route::get('/messages', [MessageController::class, 'staffIndex'])->name('messages.index');

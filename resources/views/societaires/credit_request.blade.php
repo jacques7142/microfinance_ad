@@ -37,6 +37,7 @@
 
             <div class="grid g2"><div class="field"><label>Montant sollicité (F CFA)</label><input type="number" step="0.01" name="montant" value="{{ old('montant') }}" required></div><div class="field"><label>Durée (mois)</label><input type="number" name="duree_mois" value="{{ old('duree_mois', 12) }}" required></div></div>
             <div class="field"><label>Taux d'intérêt annuel (%)</label><input type="number" step="0.01" name="taux_interet" value="{{ old('taux_interet', 12) }}" required></div>
+            <x-signature-pad label="Signature du sociétaire" name="signature" />
             <button class="btn-submit" type="submit">Soumettre ma demande</button>
         </form>
     </div>

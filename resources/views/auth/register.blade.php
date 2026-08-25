@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Inscription sociétaire — COOPEC-AD</title>
-<script>!function(){var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.setAttribute('data-theme','dark')}();</script>
+<script>!function(){var t=localStorage.getItem('coopec.guest.theme')||localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.setAttribute('data-theme','dark')}();</script>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@700;800;900&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -22,12 +22,14 @@ h1,h2,h3,h4{font-family:'Sora',sans-serif;margin:0;}
 .wrap{min-height:100vh;display:flex;}
 
 /* ===== LEFT PANEL ===== */
-.left{flex:1.15;background:linear-gradient(160deg,#011f62,#04275f);color:#fff;padding:48px 44px;display:flex;flex-direction:column;position:relative;overflow:hidden;}
+.left{flex:1.15;background:linear-gradient(160deg,rgba(1,31,98,.93),rgba(4,39,95,.92)),url('{{ asset('images/coopec-hero.jpg') }}') center/cover no-repeat;color:#fff;padding:48px 44px;display:flex;flex-direction:column;position:relative;overflow:hidden;}
 .left::before{content:'';position:absolute;top:-30%;right:-20%;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(232,163,61,.10) 0%,transparent 70%);pointer-events:none;}
 .left::after{content:'';position:absolute;bottom:-20%;left:-10%;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(232,163,61,.06) 0%,transparent 70%);pointer-events:none;}
 
 .hero-brand{display:flex;align-items:center;gap:12px;position:relative;z-index:1;}
 .hero-brand .mark{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,var(--gold),var(--gold-2));display:flex;align-items:center;justify-content:center;font-family:'Sora';font-weight:800;color:var(--navy);font-size:16px;box-shadow:0 4px 12px rgba(232,163,61,.35);}
+.hero-brand .mark img,.hero-brand .hero-logo{width:100%;height:100%;object-fit:contain;}
+.hero-brand .hero-logo{width:52px;height:52px;border-radius:14px;background:#fff;padding:6px;box-shadow:0 4px 14px rgba(0,0,0,.25);}
 .hero-brand .company{font-family:'Sora';font-weight:800;font-size:16px;letter-spacing:.02em;}
 .hero-brand .badge{margin-left:auto;font-size:10px;text-transform:uppercase;letter-spacing:.06em;padding:5px 12px;border-radius:20px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.8);}
 
@@ -109,7 +111,7 @@ h1,h2,h3,h4{font-family:'Sora',sans-serif;margin:0;}
 <div class="wrap">
   <section class="left">
     <div class="hero-brand">
-      <div class="mark">CA</div>
+      <img src="{{ asset('images/logo-cad-icon.png') }}" alt="Logo COOPEC-AD" class="hero-logo">
       <div class="company">COOPEC-AD Togo</div>
       <div class="badge">SFD agréé</div>
     </div>
@@ -196,8 +198,13 @@ h1,h2,h3,h4{font-family:'Sora',sans-serif;margin:0;}
           <label>Agence</label>
           <select name="agence_id" required>
             <option value="">Sélectionnez votre agence</option>
-            @foreach($agences as $agence)
-              <option value="{{ $agence->id }}" {{ old('agence_id') == $agence->id ? 'selected' : '' }}>{{ $agence->nom }}</option>
+            @php $agencesParRegion = $agences->groupBy(fn ($a) => $a->region); @endphp
+            @foreach($agencesParRegion as $region => $listeAgences)
+              <optgroup label="{{ $region }}">
+                @foreach($listeAgences as $agence)
+                  <option value="{{ $agence->id }}" {{ old('agence_id') == $agence->id ? 'selected' : '' }}>{{ $agence->nom }}</option>
+                @endforeach
+              </optgroup>
             @endforeach
           </select>
         </div>
@@ -290,10 +297,10 @@ h1,h2,h3,h4{font-family:'Sora',sans-serif;margin:0;}
       var html = document.documentElement;
       if (html.getAttribute('data-theme') === 'dark') {
         html.removeAttribute('data-theme');
-        localStorage.setItem('theme', 'light');
+        localStorage.setItem('coopec.guest.theme', 'light');
       } else {
         html.setAttribute('data-theme', 'dark');
-        localStorage.setItem('theme', 'dark');
+        localStorage.setItem('coopec.guest.theme', 'dark');
       }
     });
   }

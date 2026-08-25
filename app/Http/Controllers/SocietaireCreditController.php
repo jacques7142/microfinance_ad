@@ -28,6 +28,7 @@ class SocietaireCreditController extends Controller
             'montant' => ['required', 'numeric', 'min:1000'],
             'duree_mois' => ['required', 'integer', 'min:1', 'max:60'],
             'taux_interet' => ['required', 'numeric', 'min:0', 'max:100'],
+            'signature' => ['required', 'string'],
         ]);
 
         $societaire = Auth::guard('societaire')->user();
@@ -51,6 +52,8 @@ class SocietaireCreditController extends Controller
         $data['societaire_id'] = $societaire->id;
         $data['date_demande'] = now();
         $data['statut'] = Credit::STATUT_RECUE;
+        $data['signature_societaire'] = $data['signature'];
+        $data['signe_le'] = now();
 
         $credit = Credit::create($data);
 
@@ -62,6 +65,7 @@ class SocietaireCreditController extends Controller
             'contenu' => "Votre demande de crédit de {$credit->montant} F a bien été reçue. Nous vous tiendrons informé de la suite.",
             'date_envoi' => now(),
             'statut_envoi' => 'envoyee',
+            'lien' => route('societaire.mon-compte'),
         ]);
 
         return redirect()->route('societaire.dashboard')->with('success', 'Votre demande de crédit a été enregistrée.');

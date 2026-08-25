@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Connexion — COOPEC-AD</title>
-<script>!function(){var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.setAttribute('data-theme','dark')}();</script>
+<script>!function(){var t=localStorage.getItem('coopec.guest.theme')||localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.setAttribute('data-theme','dark')}();</script>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@700;800;900&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -29,7 +29,7 @@ h1,h2,h3{font-family:'Sora',sans-serif;margin:0;}
 @keyframes pulseGlow{0%,100%{box-shadow:0 4px 12px rgba(232,163,61,.18);}50%{box-shadow:0 8px 28px rgba(232,163,61,.45);}}
 
 .wrap{min-height:100vh;display:flex;}
-.left{flex:1;background:linear-gradient(160deg,#011f62,#04275f);color:#fff;padding:56px 48px;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden;}
+.left{flex:1;background:linear-gradient(160deg,rgba(1,31,98,.93),rgba(4,39,95,.92)),url('{{ asset('images/coopec-hero.jpg') }}') center/cover no-repeat;color:#fff;padding:56px 48px;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden;}
 .left::before,.left::after{content:'';position:absolute;border-radius:50%;pointer-events:none;}
 .left::before{width:420px;height:420px;top:-120px;right:-140px;background:radial-gradient(circle,rgba(232,163,61,.16) 0%,transparent 70%);animation:drift 12s ease-in-out infinite;}
 .left::after{width:360px;height:360px;bottom:-140px;left:-120px;background:radial-gradient(circle,rgba(10,58,143,.35) 0%,transparent 70%);animation:drift 16s ease-in-out infinite reverse;}
@@ -43,8 +43,10 @@ h1,h2,h3{font-family:'Sora',sans-serif;margin:0;}
 .right{flex:.9;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:40px;position:relative;overflow:hidden;}
 .right::before{content:'';position:absolute;top:-160px;right:-160px;width:380px;height:380px;border-radius:50%;background:radial-gradient(circle,rgba(10,58,143,.07) 0%,transparent 70%);animation:drift 14s ease-in-out infinite;pointer-events:none;}
 
-.hero-brand{display:flex;align-items:center;gap:10px;animation:fadeInUp .7s ease both;}
+.hero-brand{display:flex;align-items:center;gap:12px;animation:fadeInUp .7s ease both;}
 .hero-brand .mark{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--gold),var(--gold-2));display:flex;align-items:center;justify-content:center;font-family:'Sora';font-weight:800;color:var(--navy);font-size:14px;animation:pulseGlow 3.5s ease-in-out infinite;}
+.hero-brand .mark img,.hero-brand .hero-logo{width:100%;height:100%;object-fit:contain;}
+.hero-brand .hero-logo{width:52px;height:52px;border-radius:14px;background:#fff;padding:6px;box-shadow:0 4px 14px rgba(0,0,0,.25);}
 .hero-brand .company{font-family:'Sora';font-weight:800;font-size:15px;}
 .hero-copy{color:#c3cee6;font-size:13.5px;margin-top:22px;max-width:420px;line-height:1.8;animation:fadeInUp .7s .15s ease both;}
 .left h1{font-size:40px;line-height:1.05;max-width:520px;margin-top:30px;background:linear-gradient(90deg,#ffffff 0%,#ffffff 40%,#ffd27d 50%,#ffffff 60%,#ffffff 100%);background-size:220% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:fadeInUp .7s .08s ease both,shine 6s ease-in-out infinite;}
@@ -111,7 +113,7 @@ h1,h2,h3{font-family:'Sora',sans-serif;margin:0;}
     <span class="orb b"></span>
     <span class="orb c"></span>
     <span class="orb d"></span>
-    <div class="hero-brand"><div class="mark">CA</div><div class="company">COOPEC-AD Togo</div></div>
+    <div class="hero-brand"><img src="{{ asset('images/logo-cad-icon.png') }}" alt="Logo COOPEC-AD" class="hero-logo"><div class="company">COOPEC-AD Togo</div></div>
     <h1 style="font-size:40px;line-height:1.05;max-width:520px;margin-top:30px;">« Le vrai bonheur », géré simplement, agence par agence.</h1>
     <p class="hero-copy">Sociétaires, épargne DAV/DAT, crédits, tontine LOGOKU et reporting multi-agences réunis dans un seul espace sécurisé.</p>
     <div class="kpis">
@@ -174,10 +176,10 @@ h1,h2,h3{font-family:'Sora',sans-serif;margin:0;}
       var html = document.documentElement;
       if (html.getAttribute('data-theme') === 'dark') {
         html.removeAttribute('data-theme');
-        localStorage.setItem('theme', 'light');
+        localStorage.setItem('coopec.guest.theme', 'light');
       } else {
         html.setAttribute('data-theme', 'dark');
-        localStorage.setItem('theme', 'dark');
+        localStorage.setItem('coopec.guest.theme', 'dark');
       }
     });
   }

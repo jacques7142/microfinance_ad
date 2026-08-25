@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             SocietaireSeeder::class,
             DemoDataSeeder::class,
+            AgenceLocationSeeder::class,
         ]);
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\Agence;
+use App\Models\CompteEpargne;
 use App\Models\Document;
 use App\Models\JournalActivite;
 use App\Models\Societaire;
@@ -24,7 +25,7 @@ class RegisterController extends Controller
             'societaireCount' => Societaire::count(),
             'utilisateurCount' => User::count(),
             'profilCount' => User::select('role')->distinct()->count(),
-            'agences' => Agence::orderBy('nom')->get(['id', 'nom']),
+            'agences' => Agence::orderBy('nom')->get(['id', 'nom', 'ville']),
         ]);
     }
 
@@ -50,6 +51,13 @@ class RegisterController extends Controller
         $data['password'] = Hash::make($data['password']);
 
         $societaire = Societaire::create(Arr::except($data, ['signature']));
+
+        CompteEpargne::create([
+            'societaire_id' => $societaire->id,
+            'type' => CompteEpargne::TYPE_DAV,
+            'solde' => 0,
+            'date_ouverture' => now(),
+        ]);
 
         if ($request->hasFile('piece_identite')) {
             $file = $request->file('piece_identite');

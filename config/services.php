@@ -35,4 +35,17 @@ return [
         ],
     ],
 
+    // LigdiCash — agrégateur mobile money (Mixx by Yas / Flooz).
+    'ligdicash' => [
+        'base_url' => env('LIGDICASH_BASE_URL', 'https://app.ligdicash.com'),
+        'api_key' => env('LIGDICASH_API_KEY'),
+        'auth_token' => env('LIGDICASH_AUTH_TOKEN'),
+        'callback_url' => env('LIGDICASH_CALLBACK_URL'),
+        'store_name' => env('LIGDICASH_STORE_NAME', 'COOPEC-AD'),
+        // Mode démo : simule le flux de paiement (USSD push) sans appeler l'API
+        // réelle de LigdiCash. Null = automatique (activé si les identifiants
+        // ne sont pas renseignés). Utile pour la soutenance.
+        'demo' => env('LIGDICASH_DEMO'),
+    ],
+
 ];

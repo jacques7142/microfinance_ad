@@ -137,6 +137,7 @@ function openAgenceModal(agenceId) {
             document.getElementById('modalSocietaires').textContent = agence.societaires_count || 0;
             document.getElementById('modalAdresse').textContent = agence.adresse;
             document.getElementById('modalStatut').innerHTML = agence.actif ? 'Actif' : 'Inactif';
+            if (window.coopecI18n) document.getElementById('modalStatut').innerHTML = window.coopecI18n.t(document.getElementById('modalStatut').innerHTML);
             document.getElementById('modalStatut').className = agence.actif ? 'badge b-green' : 'badge b-red';
             
             // Chef d'agence

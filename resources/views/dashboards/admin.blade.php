@@ -96,6 +96,162 @@
         gap: 14px;
         margin-bottom: 28px;
     }
+    .region-block {
+        margin-bottom: 26px;
+    }
+    .region-head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+    .region-name {
+        font-family: 'Sora', sans-serif;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--navy);
+    }
+    .region-count {
+        display: inline-flex;
+        padding: 3px 10px;
+        border-radius: 100px;
+        font-size: 11px;
+        font-weight: 700;
+        background: #e8edfb;
+        color: var(--navy-2);
+    }
+    /* Vue multi-agences : régions horizontales + agences au survol */
+    .ma-wrap {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 20px;
+        margin-bottom: 28px;
+    }
+    .ma-tabs {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 10px;
+        overflow-x: auto;
+        padding-bottom: 10px;
+        -webkit-overflow-scrolling: touch;
+    }
+    .ma-tab {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+        padding: 10px 16px;
+        border-radius: 100px;
+        border: 1px solid var(--line);
+        background: var(--bg);
+        cursor: pointer;
+        transition: all 0.25s ease;
+        font-family: 'Sora', sans-serif;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--navy);
+    }
+    .ma-tab:hover {
+        border-color: var(--navy-2);
+        background: #eef2fc;
+    }
+    .ma-tab.active {
+        background: var(--navy);
+        border-color: var(--navy);
+        color: #fff;
+    }
+    .ma-tab-count {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 22px;
+        height: 22px;
+        padding: 0 6px;
+        border-radius: 100px;
+        font-size: 11px;
+        font-weight: 700;
+        background: #e8edfb;
+        color: var(--navy-2);
+    }
+    .ma-tab.active .ma-tab-count {
+        background: rgba(255, 255, 255, 0.2);
+        color: #fff;
+    }
+    .ma-panels {
+        margin-top: 14px;
+        border-top: 1px solid var(--line);
+        padding-top: 16px;
+    }
+    .ma-panel {
+        display: none;
+        animation: maFade 0.25s ease;
+    }
+    .ma-panel.active {
+        display: block;
+    }
+    @keyframes maFade {
+        from { opacity: 0; transform: translateY(4px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .ma-panel-head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 14px;
+    }
+    .ma-panel-region {
+        font-family: 'Sora', sans-serif;
+        font-size: 16px;
+        font-weight: 800;
+        color: var(--navy);
+    }
+    .ma-panel-sub {
+        display: inline-flex;
+        padding: 3px 10px;
+        border-radius: 100px;
+        font-size: 11px;
+        font-weight: 700;
+        background: #e8edfb;
+        color: var(--navy-2);
+    }
+    .ma-panel-hint {
+        margin-left: auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--muted);
+    }
+    .ma-agencies {
+        display: flex;
+        flex-direction: row;
+        gap: 12px;
+        overflow-x: auto;
+        padding: 4px 2px 10px;
+        -webkit-overflow-scrolling: touch;
+    }
+    .ma-agencies::-webkit-scrollbar {
+        height: 8px;
+    }
+    .ma-agencies::-webkit-scrollbar-thumb {
+        background: #d0d7e8;
+        border-radius: 4px;
+    }
+    .ma-agencies::-webkit-scrollbar-thumb:hover {
+        background: #b9c6ea;
+    }
+    .ma-agencies .agency-card {
+        flex: 0 0 200px;
+        width: 200px;
+    }
+    @media(max-width: 700px) {
+        .ma-panel-hint { display: none; }
+        .ma-agencies .agency-card { flex-basis: 160px; width: 160px; }
+    }
     .agency-card {
         background: var(--surface);
         border: 1px solid var(--line);
@@ -236,27 +392,57 @@
 
 <!-- Vue Multi-Agences -->
 <div class="section-header">
-    <h2>Vue multi-agences</h2>
+    <h2>Vue multi-agences — réseau COOPEC-AD</h2>
     <a href="{{ route('admin.agences.index') }}" class="link-view">Territoire togolais</a>
 </div>
 
-<div class="agencies-grid">
-    @foreach($agences->take(6) as $agence)
-        <div class="agency-card" onclick="openAgenceModal({{ $agence->id }})" style="cursor: pointer;">
-            <div class="agency-icon"><x-icon name="building" size="28"/></div>
-            <div class="agency-name">{{ substr($agence->nom, 0, 20) }}</div>
-            <div class="agency-stats">
-                {{ $agence->societaires_count }} sociétaires · PAM {{ rand(1, 5) }}%
-            </div>
-            <div class="agency-status status-normal">
-                @if(rand(0, 1))
-                    <x-icon name="check" size="12"/> Fonctionnement normal
+<div class="ma-wrap">
+    <div class="ma-tabs" id="maTabs">
+        @foreach($regionsAgences as $groupe)
+            <button type="button"
+                    class="ma-tab {{ $loop->first ? 'active' : '' }}"
+                    data-ma-panel="{{ $loop->index }}"
+                    onmouseenter="showMaPanel({{ $loop->index }})"
+                    onfocus="showMaPanel({{ $loop->index }})">
+                <span class="ma-tab-name">{{ $groupe['region'] }}</span>
+                <span class="ma-tab-count">{{ $groupe['agences']->count() }}</span>
+            </button>
+        @endforeach
+    </div>
+
+    <div class="ma-panels" id="maPanels">
+        @foreach($regionsAgences as $groupe)
+            <div class="ma-panel {{ $loop->first ? 'active' : '' }}" data-ma-panel-body="{{ $loop->index }}">
+                <div class="ma-panel-head">
+                    <span class="ma-panel-region">{{ $groupe['region'] }}</span>
+                    <span class="ma-panel-sub">{{ $groupe['agences']->count() }} agence{{ $groupe['agences']->count() > 1 ? 's' : '' }}</span>
+                    <span class="ma-panel-hint"><x-icon name="info" size="13"/> Survolez les régions ci-dessus</span>
+                </div>
+                @if($groupe['agences']->isNotEmpty())
+                    <div class="ma-agencies">
+                        @foreach($groupe['agences'] as $agence)
+                            <div class="agency-card" onclick="openAgenceModal({{ $agence->id }})" style="cursor: pointer;" title="{{ $agence->nom }}">
+                                <div class="agency-icon"><x-icon name="building" size="24"/></div>
+                                <div class="agency-name">{{ \Illuminate\Support\Str::limit($agence->nom, 22) }}</div>
+                                <div class="agency-stats">
+                                    {{ $agence->societaires_count }} sociétaire{{ $agence->societaires_count > 1 ? 's' : '' }} · {{ $agence->ville }}
+                                </div>
+                                <div class="agency-status {{ $agence->actif ? 'status-normal' : 'status-alert' }}">
+                                    @if($agence->actif)
+                                        <x-icon name="check" size="12"/> Active
+                                    @else
+                                        <x-icon name="x" size="12"/> Inactive
+                                    @endif
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
                 @else
-                    <x-icon name="alert" size="12"/> Incident signalé
+                    <div class="card card-pad" style="text-align:center;color:var(--muted);">Aucune agence dans cette région.</div>
                 @endif
             </div>
-        </div>
-    @endforeach
+        @endforeach
+    </div>
 </div>
 
 @include('partials.agence-modal')
@@ -269,6 +455,26 @@
 <div class="chart-container">
     <div class="chart-wrapper">
         <canvas id="activityChart"></canvas>
+    </div>
+</div>
+
+<!-- Diagrammes circulaires : collaborateurs & activités -->
+<div class="grid-2">
+    <div class="chart-container" style="margin-bottom:0;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <h3 style="font-size:14px;margin:0;">Collaborateurs par rôle</h3>
+        </div>
+        <div style="position:relative;height:250px;">
+            <canvas id="rolesChart"></canvas>
+        </div>
+    </div>
+    <div class="chart-container" style="margin-bottom:0;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <h3 style="font-size:14px;margin:0;">Transactions — 30 derniers jours</h3>
+        </div>
+        <div style="position:relative;height:250px;">
+            <canvas id="transactionsChart"></canvas>
+        </div>
     </div>
 </div>
 
@@ -380,6 +586,17 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+    function showMaPanel(index) {
+        const panels = document.querySelectorAll('.ma-panel');
+        const tabs = document.querySelectorAll('.ma-tab');
+        if (panels.length) {
+            panels.forEach((p, i) => p.classList.toggle('active', i === index));
+        }
+        if (tabs.length) {
+            tabs.forEach((t, i) => t.classList.toggle('active', i === index));
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         const ctx = document.getElementById('activityChart').getContext('2d');
         
@@ -466,6 +683,32 @@
                 }
             }
         });
+
+        // --- Diagrammes circulaires ---
+        function donut(id, labels, values) {
+            var el = document.getElementById(id);
+            if (!el || !values.some(function (v) { return v > 0; })) {
+                if (el) { el.parentElement.innerHTML = '<div style="height:100%;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12.5px;">Aucune donnée.</div>'; }
+                return;
+            }
+            new Chart(el, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{ data: values, backgroundColor: ['#011f62', '#0a3a8f', '#e8a33d', '#1e8a5f', '#c4453b', '#7c3aed', '#0e7490', '#c97f1e'], borderWidth: 2, borderColor: '#fff' }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, cutout: '62%',
+                    plugins: {
+                        legend: { position: 'bottom', labels: { usePointStyle: true, pointStyle: 'circle', padding: 14, boxWidth: 8, font: { family: "'Manrope', sans-serif", size: 11 }, color: '#5c6479' } },
+                        tooltip: { callbacks: { label: function (c) { var total = c.dataset.data.reduce(function (a, b) { return a + b; }, 0); var pct = total > 0 ? Math.round(c.parsed / total * 100) : 0; return ' ' + c.label + ' : ' + c.formattedValue + ' (' + pct + '%)'; } } }
+                    }
+                }
+            });
+        }
+
+        donut('rolesChart', @json(collect($rolesCoopec)->pluck('label')), @json(collect($rolesCoopec)->pluck('total')));
+        donut('transactionsChart', @json($repartitionTransactions->pluck('label')), @json($repartitionTransactions->pluck('total')));
     });
 </script>
 @endpush

@@ -33,7 +33,7 @@ class Credit extends Model
         'societaire_id', 'agent_credit_id', 'gerant_id', 'compte_tontine_id',
         'type', 'sous_type', 'partenaire', 'proportion_garantie',
         'montant', 'duree_mois', 'taux_interet', 'date_demande', 'statut',
-        'avis_agent',
+        'avis_agent', 'signature_societaire', 'signe_le',
     ];
 
     protected function casts(): array
@@ -43,7 +43,34 @@ class Credit extends Model
             'montant' => 'decimal:2',
             'taux_interet' => 'decimal:2',
             'proportion_garantie' => 'decimal:2',
+            'signe_le' => 'datetime',
         ];
+    }
+
+    /** Libellé du statut du workflow pour l'affichage. */
+    public function libelleStatut(): string
+    {
+        return match ($this->statut) {
+            self::STATUT_RECUE => 'Reçue',
+            self::STATUT_EN_INSTRUCTION => 'En instruction',
+            self::STATUT_TRANSMISE_GERANT => 'Transmise au gérant',
+            self::STATUT_VALIDEE => 'Validée',
+            self::STATUT_REJETEE => 'Rejetée',
+            self::STATUT_SOLDEE => 'Soldée',
+            default => ucfirst(str_replace('_', ' ', (string) $this->statut)),
+        };
+    }
+
+    /** Ordre du statut dans le workflow (0 = premier, null si hors workflow). */
+    public function progression(): ?int
+    {
+        return match ($this->statut) {
+            self::STATUT_RECUE => 1,
+            self::STATUT_EN_INSTRUCTION => 2,
+            self::STATUT_TRANSMISE_GERANT => 3,
+            self::STATUT_VALIDEE => 4,
+            default => null,
+        };
     }
 
     // --- Relations ---

@@ -15,7 +15,17 @@ class AgenceController extends Controller
     {
         $agences = Agence::withCount(['societaires', 'utilisateurs'])->orderBy('nom')->get();
 
-        return view('admin.agences.index', ['agences' => $agences]);
+        $regionsAgences = collect(Agence::REGIONS_TOGO)
+            ->map(fn ($region) => [
+                'region' => $region,
+                'agences' => $agences->where('region', $region)->values(),
+            ])
+            ->values();
+
+        return view('admin.agences.index', [
+            'agences' => $agences,
+            'regionsAgences' => $regionsAgences,
+        ]);
     }
 
     public function create(): View

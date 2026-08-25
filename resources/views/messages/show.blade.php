@@ -53,7 +53,18 @@
                     @php $lastDay = $message->date_envoi->format('d/m/Y'); @endphp
                 @endif
                 <div class="msg {{ $message->expediteur }}">
-                    @if($message->expediteur === 'societaire')<span class="msg-sender">Sociétaire</span>@endif
+                    @if($message->expediteur === 'societaire')
+                        <span class="msg-sender">Sociétaire</span>
+                    @else
+                        <span class="msg-sender">
+                            @if($message->utilisateur)
+                                {{ $message->utilisateur->nomComplet() }}
+                                <span style="opacity:.75;font-weight:600;">— {{ ucfirst(str_replace('_',' ',$message->utilisateur->role)) }}</span>
+                            @else
+                                COOPEC-AD
+                            @endif
+                        </span>
+                    @endif
                     {{ $message->contenu }}
                     <span class="msg-meta">{{ $message->date_envoi->format('H:i') }}</span>
                 </div>

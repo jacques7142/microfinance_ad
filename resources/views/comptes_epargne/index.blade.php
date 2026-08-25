@@ -43,7 +43,13 @@
 async function chargerComptes(societaireId) {
   const zone = document.getElementById('comptesZone');
   const select = document.getElementById('compteSelect');
-  if (!societaireId) { zone.innerHTML = ''; select.innerHTML = '<option value="">— Choisir un sociétaire d\'abord —</option>'; return; }
+  if (!societaireId) {
+    zone.innerHTML = '';
+    var opt = '— Choisir un sociétaire d\'abord —';
+    if (window.coopecI18n) opt = window.coopecI18n.t(opt);
+    select.innerHTML = '<option value="">' + opt + '</option>';
+    return;
+  }
 
   const res = await fetch(`/guichet/societaires/${societaireId}/comptes`);
   const html = await res.text();
@@ -55,7 +61,8 @@ async function chargerComptes(societaireId) {
   options.forEach(opt => {
     const o = document.createElement('option');
     o.value = opt.dataset.compteId;
-    o.textContent = opt.dataset.label;
+    const t = window.coopecI18n ? window.coopecI18n.t : (s) => s;
+    o.textContent = t(opt.dataset.label);
     select.appendChild(o);
   });
 }

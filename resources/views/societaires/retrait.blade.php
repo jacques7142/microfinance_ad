@@ -12,7 +12,7 @@
 .page-card .sub{margin:0 0 24px;color:var(--muted);line-height:1.7;font-size:14px;}
 .field{margin-bottom:20px;}
 .field label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:7px;text-transform:uppercase;letter-spacing:.06em;}
-.field input,.field select{width:100%;padding:13px 16px;border-radius:12px;border:1.5px solid var(--line);font-size:14px;font-family:'Manrope',sans-serif;background:#fafcff;transition:all .25s cubic-bezier(.4,0,.2,1);color:var(--ink);-webkit-appearance:none;appearance:none;}
+.field input:not([type="radio"]),.field select{width:100%;padding:13px 16px;border-radius:12px;border:1.5px solid var(--line);font-size:14px;font-family:'Manrope',sans-serif;background:#fafcff;transition:all .25s cubic-bezier(.4,0,.2,1);color:var(--ink);-webkit-appearance:none;appearance:none;}
 .field input:focus,.field select:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 4px rgba(1,31,98,.08);background:#fff;}
 .field input::placeholder{color:#b0b7cc;}
 .field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%235c6479' d='M6 8L0 0h12z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:38px;}
@@ -38,6 +38,9 @@
         </div>
         <h1>Retrait d'argent</h1>
         <p class="sub">Effectuez un retrait depuis l'un de vos comptes d'épargne. Vérifiez le plafond journalier.</p>
+        @if(app(\App\Services\LigdiCashService::class)->estEnModeDemo())
+        <div class="alert" style="background:var(--amber-bg);color:var(--gold-2);border:1px solid rgba(201,127,30,.28);font-size:12.5px;margin-bottom:20px;"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>Mode démonstration : le paiement est simulé et confirmé automatiquement (Mixx by Yas / Flooz).</div>
+        @endif
         <form method="POST" action="{{ route('societaire.retrait.store') }}">
             @csrf
             <div class="field">
@@ -53,6 +56,15 @@
                 <label>Montant du retrait (F CFA)</label>
                 <input type="number" step="100" min="100" name="montant" value="{{ old('montant') }}" required placeholder="Ex: 25 000">
             </div>
+            <div class="field">
+                <label>Moyen de réception</label>
+                <x-moyen-paiement id="op" :value="old('operateur', 'yas')" required />
+            </div>
+            <div class="field">
+                <label>Numéro de réception (mobile money)</label>
+                <input type="tel" name="telephone" value="{{ old('telephone', $societaire->telephone) }}" required placeholder="Ex: 90 00 00 00">
+            </div>
+            <p class="sub" style="margin-bottom:18px;">Le montant sera envoyé sur votre compte mobile money après traitement. L'opération est confirmée automatiquement.</p>
             <button class="btn-submit" type="submit"><span><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M19 17H9.5a3.5 3.5 0 0 0 0-7h5a3.5 3.5 0 0 1 0-7H6"/></svg>Effectuer le retrait</span></button>
         </form>
     </div>

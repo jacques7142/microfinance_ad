@@ -12,11 +12,14 @@ class Notification extends Model
 
     protected $table = 'notifications';
 
-    protected $fillable = ['societaire_id', 'type', 'contenu', 'date_envoi', 'statut_envoi'];
+    protected $fillable = ['societaire_id', 'type', 'contenu', 'date_envoi', 'statut_envoi', 'lu', 'lien'];
 
     protected function casts(): array
     {
-        return ['date_envoi' => 'datetime'];
+        return [
+            'date_envoi' => 'datetime',
+            'lu' => 'boolean',
+        ];
     }
 
     public function societaire(): BelongsTo

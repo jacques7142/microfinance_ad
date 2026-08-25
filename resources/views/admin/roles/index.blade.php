@@ -236,7 +236,8 @@ function toggleAll(role, btn) {
     const checkboxes = panel.querySelectorAll('input[type="checkbox"]');
     const allChecked = Array.from(checkboxes).every(c => c.checked);
     checkboxes.forEach(c => c.checked = !allChecked);
-    btn.textContent = allChecked ? 'Tout sélectionner' : 'Tout désélectionner';
+    const t = window.coopecI18n ? window.coopecI18n.t : (s) => s;
+    btn.textContent = allChecked ? t('Tout sélectionner') : t('Tout désélectionner');
 }
 </script>
 

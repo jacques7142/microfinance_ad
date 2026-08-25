@@ -3,19 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Models\CompteEpargne;
-use App\Models\Credit;
 use App\Models\Echeance;
-use App\Models\JournalActivite;
-use App\Models\Notification;
-use App\Models\Transaction;
+use App\Models\PaiementMobile;
+use App\Services\LigdiCashService;
+use App\Services\PaiementMobileService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class SocietaireOperationController extends Controller
 {
+    public function __construct(
+        private readonly LigdiCashService $ligdiCash,
+        private readonly PaiementMobileService $paiementService,
+    ) {}
+
     public function depotForm(): View
     {
         $societaire = Auth::guard('societaire')->user()->load('comptesEpargne');
@@ -25,10 +28,7 @@ class SocietaireOperationController extends Controller
 
     public function depot(Request $request): RedirectResponse
     {
-        $data = $request->validate([
-            'compte_epargne_id' => ['required', 'exists:comptes_epargne,id'],
-            'montant' => ['required', 'numeric', 'min:100'],
-        ]);
+        $data = $this->validerOperation($request, 'depot');
 
         $societaire = Auth::guard('societaire')->user();
         $compte = CompteEpargne::findOrFail($data['compte_epargne_id']);
@@ -37,32 +37,9 @@ class SocietaireOperationController extends Controller
             return back()->withErrors(['compte_epargne_id' => 'Ce compte ne vous appartient pas.']);
         }
 
-        DB::transaction(function () use ($compte, $data, $societaire) {
-            $compte->solde = (float) $compte->solde + $data['montant'];
-            $compte->save();
+        $paiement = $this->creerPaiement($societaire, PaiementMobile::TYPE_DEPOT, PaiementMobile::SENS_PAYIN, $data, $compte);
 
-            $transaction = Transaction::create([
-                'agence_id' => $societaire->agence_id,
-                'societaire_id' => $societaire->id,
-                'compte_epargne_id' => $compte->id,
-                'type' => Transaction::TYPE_DEPOT,
-                'montant' => $data['montant'],
-                'date_operation' => now(),
-                'statut' => 'validee',
-            ]);
-
-            Notification::create([
-                'societaire_id' => $societaire->id,
-                'type' => 'sms',
-                'contenu' => "Dépôt de {$data['montant']} F confirmé sur votre compte {$compte->type}.",
-                'date_envoi' => now(),
-                'statut_envoi' => 'envoyee',
-            ]);
-
-            JournalActivite::enregistrer('depot_societaire', "Dépôt de {$data['montant']} F — compte {$compte->type} #{$compte->id}", $transaction);
-        });
-
-        return redirect()->route('societaire.dashboard')->with('success', 'Votre dépôt a été enregistré avec succès.');
+        return $this->initier($request, $paiement);
     }
 
     public function retraitForm(): View
@@ -74,10 +51,7 @@ class SocietaireOperationController extends Controller
 
     public function retrait(Request $request): RedirectResponse
     {
-        $data = $request->validate([
-            'compte_epargne_id' => ['required', 'exists:comptes_epargne,id'],
-            'montant' => ['required', 'numeric', 'min:100'],
-        ]);
+        $data = $this->validerOperation($request, 'retrait');
 
         $societaire = Auth::guard('societaire')->user();
         $compte = CompteEpargne::findOrFail($data['compte_epargne_id']);
@@ -94,32 +68,9 @@ class SocietaireOperationController extends Controller
             return back()->withErrors(['montant' => 'Montant supérieur au plafond de retrait journalier.']);
         }
 
-        DB::transaction(function () use ($compte, $data, $societaire) {
-            $compte->solde = (float) $compte->solde - $data['montant'];
-            $compte->save();
+        $paiement = $this->creerPaiement($societaire, PaiementMobile::TYPE_RETRAIT, PaiementMobile::SENS_PAYOUT, $data, $compte);
 
-            $transaction = Transaction::create([
-                'agence_id' => $societaire->agence_id,
-                'societaire_id' => $societaire->id,
-                'compte_epargne_id' => $compte->id,
-                'type' => Transaction::TYPE_RETRAIT,
-                'montant' => $data['montant'],
-                'date_operation' => now(),
-                'statut' => 'validee',
-            ]);
-
-            Notification::create([
-                'societaire_id' => $societaire->id,
-                'type' => 'sms',
-                'contenu' => "Retrait de {$data['montant']} F confirmé sur votre compte {$compte->type}.",
-                'date_envoi' => now(),
-                'statut_envoi' => 'envoyee',
-            ]);
-
-            JournalActivite::enregistrer('retrait_societaire', "Retrait de {$data['montant']} F — compte {$compte->type} #{$compte->id}", $transaction);
-        });
-
-        return redirect()->route('societaire.dashboard')->with('success', 'Votre retrait a été enregistré avec succès.');
+        return $this->initier($request, $paiement);
     }
 
     public function remboursementForm(): View
@@ -135,6 +86,8 @@ class SocietaireOperationController extends Controller
         $data = $request->validate([
             'echeance_id' => ['required', 'exists:echeances,id'],
             'montant' => ['required', 'numeric', 'min:1'],
+            'operateur' => ['required', 'in:yas,flooz'],
+            'telephone' => ['required', 'numeric', 'digits_between:8,11'],
         ]);
 
         $societaire = Auth::guard('societaire')->user();
@@ -153,40 +106,152 @@ class SocietaireOperationController extends Controller
             return back()->withErrors(['montant' => "Le montant restant dû est de {$resteADu} F CFA."]);
         }
 
-        DB::transaction(function () use ($echeance, $data, $societaire) {
-            $echeance->montant_paye = (float) $echeance->montant_paye + $data['montant'];
-            if ((float) $echeance->montant_paye >= (float) $echeance->montant_du) {
-                $echeance->statut = Echeance::STATUT_PAYEE;
+        $paiement = PaiementMobile::create([
+            'societaire_id' => $societaire->id,
+            'reference_interne' => $this->genererReference(),
+            'type' => PaiementMobile::TYPE_REMBOURSEMENT,
+            'sens' => PaiementMobile::SENS_PAYIN,
+            'operateur' => $data['operateur'],
+            'telephone' => $data['telephone'],
+            'montant' => $data['montant'],
+            'statut' => PaiementMobile::STATUT_PENDING,
+            'credit_id' => $echeance->credit_id,
+            'echeance_id' => $echeance->id,
+            'date_initiation' => now(),
+        ]);
+
+        return $this->initier($request, $paiement);
+    }
+
+    /**
+     * Validation commune des champs de dépôt et de retrait.
+     */
+    protected function validerOperation(Request $request, string $type): array
+    {
+        return $request->validate([
+            'compte_epargne_id' => ['required', 'exists:comptes_epargne,id'],
+            'montant' => ['required', 'numeric', 'min:100'],
+            'operateur' => ['required', 'in:yas,flooz'],
+            'telephone' => ['required', 'numeric', 'digits_between:8,11'],
+        ]);
+    }
+
+    /**
+     * Crée la demande de paiement mobile (hors appel API) pour un dépôt ou un retrait.
+     */
+    protected function creerPaiement($societaire, string $type, string $sens, array $data, CompteEpargne $compte): PaiementMobile
+    {
+        return PaiementMobile::create([
+            'societaire_id' => $societaire->id,
+            'reference_interne' => $this->genererReference(),
+            'type' => $type,
+            'sens' => $sens,
+            'operateur' => $data['operateur'],
+            'telephone' => $data['telephone'],
+            'montant' => $data['montant'],
+            'statut' => PaiementMobile::STATUT_PENDING,
+            'compte_epargne_id' => $compte->id,
+            'date_initiation' => now(),
+        ]);
+    }
+
+    /**
+     * Initie l'appel LigdiCash et redirige vers la page d'attente.
+     */
+    protected function initier(Request $request, PaiementMobile $paiement): RedirectResponse
+    {
+        $callbackUrl = config('services.ligdicash.callback_url');
+
+        // Mode démo : le paiement est simulé et confirmé immédiatement afin de
+        // pouvoir présenter le parcours complet (choix Yas/Flooz → validation)
+        // au jury, sans identifiants LigdiCash réels.
+        if ($this->ligdiCash->estEnModeDemo()) {
+            try {
+                $paiement->token = 'demo-'.substr(md5($paiement->reference_interne), 0, 12);
+                $paiement->save();
+
+                $this->paiementService->simulerConfirmation($paiement);
+            } catch (\Throwable $e) {
+                $paiement->finaliser(PaiementMobile::STATUT_FAILED);
+
+                return back()->withErrors(['paiement' => $e->getMessage()]);
             }
-            $echeance->save();
 
-            $toutesPayees = $echeance->credit->echeances()->where('statut', '!=', Echeance::STATUT_PAYEE)->count() === 0;
-            if ($toutesPayees) {
-                $echeance->credit->statut = Credit::STATUT_SOLDEE;
-                $echeance->credit->save();
+            return redirect()->route('societaire.paiement.statut', $paiement)
+                ->with('success', 'Paiement simulé (mode démo) — votre opération a été enregistrée avec succès.');
+        }
+
+        try {
+            if ($paiement->sens === PaiementMobile::SENS_PAYIN) {
+                $resultat = $this->ligdiCash->createPayin([
+                    'montant' => $paiement->montant,
+                    'description' => "COOPEC-AD — {$paiement->typeLibelle()} #{$paiement->reference_interne}",
+                    'telephone' => $paiement->telephone,
+                    'nom' => $paiement->societaire->nom,
+                    'prenom' => $paiement->societaire->prenom,
+                    'email' => $paiement->societaire->email ?? '',
+                ], $paiement->reference_interne, $callbackUrl);
+            } else {
+                $resultat = $this->ligdiCash->createPayout([
+                    'montant' => $paiement->montant,
+                    'description' => "COOPEC-AD — Retrait #{$paiement->reference_interne}",
+                    'telephone' => $paiement->telephone,
+                ], $paiement->reference_interne, $callbackUrl);
             }
+        } catch (\Throwable $e) {
+            $paiement->finaliser(PaiementMobile::STATUT_FAILED);
 
-            $transaction = Transaction::create([
-                'agence_id' => $societaire->agence_id,
-                'societaire_id' => $societaire->id,
-                'credit_id' => $echeance->credit_id,
-                'type' => Transaction::TYPE_REMBOURSEMENT,
-                'montant' => $data['montant'],
-                'date_operation' => now(),
-                'statut' => 'validee',
-            ]);
+            return back()->withErrors(['paiement' => $e->getMessage()]);
+        }
 
-            Notification::create([
-                'societaire_id' => $societaire->id,
-                'type' => 'sms',
-                'contenu' => "Remboursement de {$data['montant']} F reçu pour le crédit #{$echeance->credit_id}.",
-                'date_envoi' => now(),
-                'statut_envoi' => 'envoyee',
-            ]);
+        // response_code "00" = requête acceptée ; on stocke le token pour le callback.
+        if (($resultat['response_code'] ?? '') !== '00' || empty($resultat['token'])) {
+            $paiement->finaliser(PaiementMobile::STATUT_FAILED, null, $resultat);
 
-            JournalActivite::enregistrer('remboursement_societaire', "Remboursement de {$data['montant']} F — échéance #{$echeance->id} du crédit #{$echeance->credit_id}", $transaction);
-        });
+            return back()->withErrors(['paiement' => 'Le paiement n\'a pas pu être initié. '.($resultat['response_text'] ?? '').' (code '.($resultat['response_code'] ?? 'inconnu').')']);
+        }
 
-        return redirect()->route('societaire.remboursement')->with('success', 'Remboursement enregistré.');
+        $paiement->token = $resultat['token'];
+        $paiement->save();
+
+        return redirect()->route('societaire.paiement.statut', $paiement)
+            ->with('success', 'Paiement initié. Validez l\'opération sur votre téléphone.');
+    }
+
+    /**
+     * Génère une référence interne unique pour la demande de paiement.
+     */
+    protected function genererReference(): string
+    {
+        return 'MP-'.strtoupper(substr(md5(uniqid((string) random_int(1, 999999), true)), 0, 14));
+    }
+
+    /**
+     * Page d'attente de validation d'un paiement mobile (interroge le statut en AJAX).
+     */
+    public function statutPaiement(PaiementMobile $paiement): View
+    {
+        $societaire = Auth::guard('societaire')->user();
+
+        if ($paiement->societaire_id !== $societaire->id) {
+            abort(403);
+        }
+
+        return view('societaires.paiement_statut', ['paiement' => $paiement, 'societaire' => $societaire]);
+    }
+
+    /**
+     * Historique des demandes de paiement mobile du sociétaire.
+     */
+    public function paiements(): View
+    {
+        $societaire = Auth::guard('societaire')->user();
+
+        $paiements = PaiementMobile::where('societaire_id', $societaire->id)
+            ->with(['compteEpargne', 'credit', 'echeance'])
+            ->orderByDesc('date_initiation')
+            ->paginate(15);
+
+        return view('societaires.paiements', ['societaire' => $societaire, 'paiements' => $paiements]);
     }
 }

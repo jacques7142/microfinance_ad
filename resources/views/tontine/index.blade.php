@@ -51,7 +51,9 @@
 <script>
 function preremplir(compteId, nom, mise) {
   document.getElementById('compteTontineId').value = compteId;
-  document.getElementById('membreLabel').textContent = 'Membre sélectionné : ' + nom;
+  var label = 'Membre sélectionné : ' + nom;
+  if (window.coopecI18n) label = window.coopecI18n.t(label);
+  document.getElementById('membreLabel').textContent = label;
   document.getElementById('montantInput').value = mise || '';
 }
 </script>

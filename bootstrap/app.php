@@ -17,6 +17,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => EnsureRole::class,
             'permission' => EnsurePermission::class,
         ]);
+
+        $middleware->validateCsrfTokens(except: [
+            'api/paiement/callback',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
